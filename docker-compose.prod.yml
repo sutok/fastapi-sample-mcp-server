@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+    ports:
+      - "8000:8000"

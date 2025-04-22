@@ -1,0 +1,173 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List, Optional, Any
+from datetime import datetime, date
+from ....crud.crud_reservation import crud_reservation
+from ....models.reservation import (
+    Reservation,
+    ReservationCreate,
+    ReservationUpdate,
+    ReservationInDB,
+)
+from ....core.security import SecurityService
+
+router = APIRouter()
+
+
+@router.post("/", response_model=Reservation)
+async def create_reservation(
+    reservation: ReservationCreate,
+    current_user: dict = Depends(SecurityService.verify_firebase_token),
+):
+    """
+    新規予約を作成
+
+    Args:
+        reservation (ReservationCreate): 予約情報
+        current_user (dict): 現在のユーザー情報（依存性注入）
+
+    Returns:
+        Reservation: 作成された予約情報
+    """
+    # 予約時間の重複チェック
+    is_taken = await crud_reservation.is_time_slot_taken(
+        reservation.reservation_date, reservation.reservation_time
+    )
+    if is_taken:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "message": "指定された時間枠は既に予約されています",
+                "reservation_date": reservation.reservation_date.isoformat(),
+                "reservation_time": reservation.reservation_time,
+            },
+        )
+
+    return await crud_reservation.create(
+        reservation=reservation, user_id=current_user["uid"]
+    )
+
+
+@router.get("/", response_model=List[Reservation])
+async def read_reservations(
+    current_user: dict = Depends(SecurityService.verify_firebase_token),
+    skip: int = 0,
+    limit: int = 10,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+):
+    """
+    ユーザーの予約一覧を取得
+
+    Args:
+        current_user (dict): 現在のユーザー情報（依存性注入）
+        skip (int): スキップする件数
+        limit (int): 取得する件数
+        date_from (date, optional): 検索開始日
+        date_to (date, optional): 検索終了日
+
+    Returns:
+        List[Reservation]: 予約一覧
+    """
+    return await crud_reservation.get_multi_by_user(
+        user_id=current_user["uid"],
+        skip=skip,
+        limit=limit,
+        date_from=date_from,
+        date_to=date_to,
+    )
+
+
+@router.get("/{reservation_id}", response_model=Reservation)
+async def read_reservation(
+    reservation_id: str,
+    current_user: dict = Depends(SecurityService.verify_firebase_token),
+):
+    """
+    特定の予約情報を取得
+
+    Args:
+        reservation_id (str): 予約ID
+        current_user (dict): 現在のユーザー情報（依存性注入）
+
+    Returns:
+        Reservation: 予約情報
+    """
+    reservation = await crud_reservation.get(reservation_id)
+    if not reservation:
+        raise HTTPException(status_code=404, detail="予約が見つかりません")
+    if reservation.user_id != current_user["uid"]:
+        raise HTTPException(
+            status_code=403, detail="この予約にアクセスする権限がありません"
+        )
+    return reservation
+
+
+@router.put("/{reservation_id}", response_model=Reservation)
+async def update_reservation(
+    reservation_id: str,
+    reservation_update: ReservationUpdate,
+    current_user: dict = Depends(SecurityService.verify_firebase_token),
+):
+    """
+    予約情報を更新
+
+    Args:
+        reservation_id (str): 予約ID
+        reservation_update (ReservationUpdate): 更新する予約情報
+        current_user (dict): 現在のユーザー情報（依存性注入）
+
+    Returns:
+        Reservation: 更新された予約情報
+    """
+    reservation = await crud_reservation.get(reservation_id)
+    if not reservation:
+        raise HTTPException(status_code=404, detail="予約が見つかりません")
+    if reservation.user_id != current_user["uid"]:
+        raise HTTPException(
+            status_code=403, detail="この予約を更新する権限がありません"
+        )
+
+    return await crud_reservation.update(
+        reservation_id=reservation_id, reservation_update=reservation_update
+    )
+
+
+@router.delete("/{reservation_id}")
+async def delete_reservation(
+    reservation_id: str,
+    current_user: dict = Depends(SecurityService.verify_firebase_token),
+):
+    """
+    予約をキャンセル
+
+    Args:
+        reservation_id (str): 予約ID
+        current_user (dict): 現在のユーザー情報（依存性注入）
+
+    Returns:
+        dict: キャンセル完了メッセージ
+    """
+    reservation = await crud_reservation.get(reservation_id)
+    if not reservation:
+        raise HTTPException(status_code=404, detail="予約が見つかりません")
+    if reservation.user_id != current_user["uid"]:
+        raise HTTPException(
+            status_code=403, detail="この予約をキャンセルする権限がありません"
+        )
+
+    await crud_reservation.delete(reservation_id)
+    return {"message": "予約が正常にキャンセルされました"}
+
+
+@router.get("/availability/{date}", response_model=List[dict])
+async def check_availability(date: date):
+    """
+    指定日の予約可能な時間枠を取得
+
+    Args:
+        date (date): 確認したい日付
+
+    Returns:
+        List[dict]: 利用可能な時間枠のリスト
+    """
+    return await crud_reservation.get_available_slots(date)
