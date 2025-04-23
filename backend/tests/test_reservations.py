@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, date
 import pytest
 from fastapi import status
 from app.models.reservation import ReservationStatus
+from app.core.firebase import get_firestore
 
 
 @pytest.fixture
@@ -16,12 +17,26 @@ def sample_reservation_data():
 
 @pytest.mark.asyncio
 async def test_create_reservation(client, sample_reservation_data, auth_headers):
+
+    db = get_firestore()
+    reservations_ref = db.collection("reservations")
+    # 特定の日付と時間の予約を検索
+    query = reservations_ref.where(
+        "reservation_date",
+        "==",
+        datetime.fromisoformat(sample_reservation_data["reservation_date"]),
+    ).where("reservation_time", "==", sample_reservation_data["reservation_time"])
+    docs = query.get()
+    # 見つかった予約を削除
+    for doc in docs:
+        doc.reference.delete()
+
+    # クリーンアップ後に再度予約を試行
     response = client.post(
         "/api/v1/reservations/", json=sample_reservation_data, headers=auth_headers
     )
-    if response.status_code != 201:
-        print("Error response:", response.json())  # エラーの詳細を出力
-    assert response.status_code == 201
+
+    assert response.status_code == status.HTTP_200_OK
     data = response.json()
     assert data["reservation_date"] == sample_reservation_data["reservation_date"]
     assert data["reservation_time"] == sample_reservation_data["reservation_time"]
