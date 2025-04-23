@@ -1,8 +1,11 @@
 from typing import Optional
 from firebase_admin import firestore
 from datetime import datetime
-from ..models.user import UserCreate, UserUpdate
+from ..models.user import UserCreate, UserUpdate, User
 from ..core.firebase import get_firestore
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class CRUDUser:
@@ -25,18 +28,25 @@ class CRUDUser:
         Returns:
             dict: 作成されたユーザー情報
         """
-        user_data = {
-            "uid": uid,
-            "email": user.email,
-            "username": user.username,
-            "is_active": True,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow(),
-        }
+        try:
+            current_time = datetime.utcnow()
+            user_data = {
+                "id": uid,  # uidをidとして使用
+                "email": user.email,
+                "username": user.username,
+                "is_active": True,
+                "created_at": current_time,
+                "updated_at": current_time,
+            }
 
-        # Firestoreにユーザーデータを保存
-        self.collection.document(uid).set(user_data)
-        return user_data
+            # Firestoreにユーザーデータを保存
+            doc_ref = self.collection.document(uid)
+            doc_ref.set(user_data)
+
+            return user_data
+        except Exception as e:
+            print(f"Error in create: {str(e)}")  # デバッグ用
+            raise
 
     async def get_by_uid(self, uid: str) -> Optional[dict]:
         """
@@ -48,8 +58,19 @@ class CRUDUser:
         Returns:
             Optional[dict]: ユーザー情報（存在しない場合はNone）
         """
-        doc = self.collection.document(uid).get()
-        return doc.to_dict() if doc.exists else None
+        try:
+            logger.debug(f"Fetching user with uid: {uid}")
+            doc = self.collection.document(uid).get()
+            if doc.exists:
+                user_data = doc.to_dict()
+                user_data["id"] = doc.id
+                logger.debug(f"Found user data: {user_data}")
+                return user_data
+            logger.debug(f"No user found with uid: {uid}")
+            return None
+        except Exception as e:
+            logger.error(f"Error in get_by_uid: {str(e)}")
+            raise
 
     async def update(self, uid: str, user_update: UserUpdate) -> Optional[dict]:
         """

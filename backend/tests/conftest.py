@@ -1,13 +1,13 @@
 import pytest
 from fastapi.testclient import TestClient
+from unittest.mock import Mock, patch
 from firebase_admin import auth
-from unittest.mock import Mock, patch, AsyncMock
 from app.main import app
 from app.core.firebase import initialize_firebase
-from app.core.security import SecurityService, firebase_auth
+from app.core.security import SecurityService
 from fastapi.security import HTTPAuthorizationCredentials
 import jwt
-from firebase_admin import firestore
+from fastapi import HTTPException, status
 
 # Firebaseエミュレータの設定
 import os
@@ -31,48 +31,31 @@ def client():
 @pytest.fixture
 def mock_firebase_auth():
     """Firebase認証のモック"""
-    # 認証モックの作成
-    mock_auth = Mock()
-    mock_auth.get_user_by_email.return_value = Mock(
-        uid="test_user_id", email="test@example.com", email_verified=True
-    )
-    mock_auth.create_custom_token.return_value = "test_token"
 
-    # verify_firebase_tokenのモック関数
     async def mock_verify_token(credentials: HTTPAuthorizationCredentials):
-        token = credentials.credentials
-        # JWTトークンをデコード
-        decoded_token = jwt.decode(token, options={"verify_signature": False})
+        if not credentials or not credentials.credentials:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="認証情報がありません"
+            )
+
+        if credentials.credentials == "invalid_token":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="無効なトークンです"
+            )
+
         return {
             "uid": "test_user_id",
             "email": "test@example.com",
             "email_verified": True,
         }
 
-    # requestsのモック
-    mock_response = Mock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = {
-        "users": [
-            {
-                "localId": "test_user_id",
-                "email": "test@example.com",
-                "emailVerified": True,
-            }
-        ]
-    }
-
-    # SecurityServiceとfirebase_adminのモック
-    with patch.object(
+    # パッチを適用
+    patcher = patch.object(
         SecurityService, "verify_firebase_token", new=mock_verify_token
-    ) as mock_verify, patch(
-        "firebase_admin.auth", return_value=mock_auth
-    ) as mock_firebase, patch(
-        "requests.post", return_value=mock_response
-    ):
-        mock_firebase.get_user_by_email = mock_auth.get_user_by_email
-        mock_firebase.create_custom_token = mock_auth.create_custom_token
-        yield mock_firebase
+    )
+    patcher.start()
+    yield
+    patcher.stop()
 
 
 @pytest.fixture
@@ -94,7 +77,6 @@ def mock_requests():
 @pytest.fixture
 def auth_headers():
     """認証ヘッダーの作成"""
-    # JWTトークンを作成
     token = jwt.encode(
         {
             "user_id": "test_user_id",
@@ -110,8 +92,23 @@ def auth_headers():
 @pytest.fixture(autouse=True)
 async def cleanup_database():
     """各テストケース実行前にデータベースをクリーンアップ"""
-    db = firestore.client()
-    reservations_ref = db.collection("reservations")
-    docs = reservations_ref.get()
-    for doc in docs:
-        doc.reference.delete()
+    db = get_firestore()
+
+    # クリーンアップ対象のコレクション
+    collections = ["reservations", "users"]
+
+    # テスト前のクリーンアップ
+    for collection_name in collections:
+        collection_ref = db.collection(collection_name)
+        docs = collection_ref.get()
+        for doc in docs:
+            doc.reference.delete()
+
+    yield
+
+    # テスト後のクリーンアップ
+    for collection_name in collections:
+        collection_ref = db.collection(collection_name)
+        docs = collection_ref.get()
+        for doc in docs:
+            doc.reference.delete()

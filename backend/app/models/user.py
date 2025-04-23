@@ -1,14 +1,14 @@
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
 
 
 class UserBase(BaseModel):
     """ユーザーの基本情報モデル"""
 
-    email: EmailStr
-    username: str
-    is_active: bool = True
+    email: EmailStr = Field(..., description="メールアドレス")
+    username: str = Field(..., description="ユーザー名")
+    is_active: bool = Field(default=True, description="アクティブ状態")
 
 
 class UserCreate(UserBase):
@@ -24,18 +24,12 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
 
 
-class UserInDB(UserBase):
-    """データベースに保存されるユーザーモデル"""
+class User(UserBase):
+    """APIレスポンス用ユーザーモデル"""
 
-    uid: str
-    created_at: datetime
-    updated_at: datetime
+    id: str = Field(..., description="ユーザーID")
+    created_at: datetime = Field(..., description="作成日時")
+    updated_at: datetime = Field(..., description="更新日時")
 
     class Config:
         from_attributes = True
-
-
-class User(UserInDB):
-    """APIレスポンス用ユーザーモデル"""
-
-    pass
