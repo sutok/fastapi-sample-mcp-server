@@ -97,7 +97,10 @@ def test_invalid_bearer_token(client):
     """無効なBearerトークンのテスト"""
     invalid_headers = {"Authorization": "Bearer invalid_token"}
     response = client.get("/api/v1/users/me", headers=invalid_headers)
+    print(f"\nResponse status: {response.status_code}")
+    print(f"Response headers: {response.headers}")
+    print(f"Response body: {response.json()}")
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert "WWW-Authenticate" in response.headers
-    assert response.json()["detail"] == "無効なトークンです"
+    assert response.json()["detail"] == "無効なトークンです。"
