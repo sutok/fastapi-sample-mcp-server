@@ -1,14 +1,57 @@
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 from firebase_admin import auth
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Depends, HTTPException, status, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from ..core.config import settings
 import jwt
 import requests
+import logging
+from fastapi.security.utils import get_authorization_scheme_param
 
-# HTTPBearerスキームの設定
-firebase_auth = HTTPBearer()
+logger = logging.getLogger(__name__)
+
+
+class FirebaseAuthBearer(HTTPBearer):
+    """カスタムFirebase認証ベアラー"""
+
+    def __init__(self, auto_error: bool = True):
+        super().__init__(auto_error=auto_error)
+
+    async def __call__(self, request: Request) -> HTTPAuthorizationCredentials:
+        """
+        認証ヘッダーを検証してクレデンシャルを返す
+        """
+        authorization: str = request.headers.get("Authorization")
+
+        if not authorization:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="認証情報がありません。",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        scheme, credentials = get_authorization_scheme_param(authorization)
+
+        if not scheme or scheme.lower() != "bearer":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="無効な認証スキームです。Bearer認証が必要です。",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        if not credentials:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="認証トークンがありません。",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        return HTTPAuthorizationCredentials(scheme=scheme, credentials=credentials)
+
+
+# カスタム認証インスタンスを作成
+firebase_auth = FirebaseAuthBearer()
 
 
 class SecurityService:
@@ -18,66 +61,52 @@ class SecurityService:
     ) -> dict:
         """
         Firebaseトークンを検証し、ユーザー情報を取得
-
-        Args:
-            credentials: HTTPAuthorizationCredentials
-
-        Returns:
-            dict: 検証済みのユーザー情報
-
-        Raises:
-            HTTPException: トークンが無効な場合
         """
         try:
-            # Bearer tokenから実際のトークンを取得
             token = credentials.credentials
 
             # 開発環境（エミュレータ）での処理
             if settings.ENVIRONMENT == "development":
                 try:
-                    # エミュレータでのトークン検証
-                    # JWT自体をデコードしてユーザー情報を取得
                     decoded_token = jwt.decode(
                         token, options={"verify_signature": False}
                     )
-
-                    # ユーザー情報をエミュレータから取得
-                    auth_url = f"http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:lookup?key=fake-api-key"
-                    headers = {"Content-Type": "application/json"}
-                    payload = {"idToken": token}
-
-                    response = requests.post(auth_url, json=payload, headers=headers)
-                    if response.status_code == 200:
-                        user_data = response.json().get("users", [{}])[0]
-                        return {
-                            "uid": user_data.get("localId"),
-                            "email": user_data.get("email"),
-                            "email_verified": user_data.get("emailVerified", False),
-                        }
-
                     return {
-                        "uid": decoded_token.get("user_id"),
-                        "email": decoded_token.get("email"),
-                        "email_verified": decoded_token.get("email_verified", False),
+                        "uid": decoded_token.get("user_id", "test_user_id"),
+                        "email": decoded_token.get("email", "test@example.com"),
+                        "email_verified": decoded_token.get("email_verified", True),
                     }
                 except Exception as e:
+                    logger.error(f"Token verification error in emulator: {str(e)}")
                     raise HTTPException(
                         status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail=f"Invalid token in emulator: {str(e)}",
+                        detail="無効なトークンです。",
+                        headers={"WWW-Authenticate": "Bearer"},
                     )
 
             # 本番環境での処理
-            decoded_token = auth.verify_id_token(token)
-            return {
-                "uid": decoded_token["uid"],
-                "email": decoded_token.get("email"),
-                "email_verified": decoded_token.get("email_verified", False),
-            }
+            try:
+                decoded_token = auth.verify_id_token(token)
+                return {
+                    "uid": decoded_token["uid"],
+                    "email": decoded_token.get("email"),
+                    "email_verified": decoded_token.get("email_verified", False),
+                }
+            except Exception as e:
+                logger.error(f"Token verification error: {str(e)}")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="無効なトークンです。",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
 
+        except HTTPException as e:
+            raise e
         except Exception as e:
+            logger.error(f"Unexpected authentication error: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=f"Invalid authentication credentials: {str(e)}",
+                detail="認証エラーが発生しました。",
                 headers={"WWW-Authenticate": "Bearer"},
             )
 

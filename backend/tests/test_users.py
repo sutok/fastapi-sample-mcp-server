@@ -71,4 +71,33 @@ def test_update_user_me(client, auth_headers, mock_firebase_auth):
 def test_unauthorized_access(client):
     """未認証アクセスのテスト"""
     response = client.get("/api/v1/users/me")
+    print(f"\nResponse status: {response.status_code}")
+    print(f"Response headers: {response.headers}")
+    print(f"Response body: {response.json()}")
+
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert "WWW-Authenticate" in response.headers
+    assert response.json()["detail"] == "認証情報がありません。"
+
+
+def test_invalid_token_format(client):
+    """無効なトークン形式のテスト"""
+    invalid_headers = {"Authorization": "invalid_token"}
+    response = client.get("/api/v1/users/me", headers=invalid_headers)
+    print(f"\nResponse status: {response.status_code}")
+    print(f"Response headers: {response.headers}")
+    print(f"Response body: {response.json()}")
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert "WWW-Authenticate" in response.headers
+    assert response.json()["detail"] == "無効な認証スキームです。Bearer認証が必要です。"
+
+
+def test_invalid_bearer_token(client):
+    """無効なBearerトークンのテスト"""
+    invalid_headers = {"Authorization": "Bearer invalid_token"}
+    response = client.get("/api/v1/users/me", headers=invalid_headers)
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert "WWW-Authenticate" in response.headers
+    assert response.json()["detail"] == "無効なトークンです"
