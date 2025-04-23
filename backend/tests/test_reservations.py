@@ -6,10 +6,10 @@ from app.models.reservation import ReservationStatus
 
 @pytest.fixture
 def sample_reservation_data():
-    future_date = (datetime.now() + timedelta(days=30)).date()  # 1ヶ月後の日付
+    future_date = (datetime.now() + timedelta(days=30)).date()
     return {
         "reservation_date": future_date.isoformat(),
-        "reservation_time": "15:30",
+        "reservation_time": "14:00",  # 異なる時間枠を使用
         "notes": "テスト予約",
     }
 
@@ -50,3 +50,22 @@ async def test_invalid_reservation_date(client, auth_headers, mock_firebase_auth
         "/api/v1/reservations/", headers=auth_headers, json=reservation_data
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+@pytest.mark.asyncio
+async def test_duplicate_reservation(client, sample_reservation_data, auth_headers):
+    """同じ時間枠での重複予約をテスト"""
+    # 最初の予約を作成
+    response1 = client.post(
+        "/api/v1/reservations/", json=sample_reservation_data, headers=auth_headers
+    )
+    assert response1.status_code == 201
+
+    # 同じ時間枠で2回目の予約を試みる
+    response2 = client.post(
+        "/api/v1/reservations/", json=sample_reservation_data, headers=auth_headers
+    )
+    assert response2.status_code == 409
+    error_detail = response2.json()
+    assert "message" in error_detail
+    assert "指定された時間枠は既に予約されています" in error_detail["message"]

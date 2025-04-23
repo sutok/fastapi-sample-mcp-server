@@ -7,6 +7,7 @@ from app.core.firebase import initialize_firebase
 from app.core.security import SecurityService, firebase_auth
 from fastapi.security import HTTPAuthorizationCredentials
 import jwt
+from firebase_admin import firestore
 
 # Firebaseエミュレータの設定
 import os
@@ -104,3 +105,13 @@ def auth_headers():
         algorithm="HS256",
     )
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(autouse=True)
+async def cleanup_database():
+    """各テストケース実行前にデータベースをクリーンアップ"""
+    db = firestore.client()
+    reservations_ref = db.collection("reservations")
+    docs = reservations_ref.get()
+    for doc in docs:
+        doc.reference.delete()
