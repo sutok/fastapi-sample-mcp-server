@@ -1,7 +1,8 @@
 from datetime import date, time, datetime, timedelta
 from typing import Optional
 from enum import Enum
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
+from typing_extensions import Annotated
 
 
 class ReservationStatus(str, Enum):
@@ -25,8 +26,9 @@ class ReservationBase(BaseModel):
         None, max_length=500, description="備考（最大500文字）"
     )
 
-    @validator("reservation_date")
-    def validate_date(cls, v):
+    @field_validator("reservation_date")
+    @classmethod
+    def validate_date(cls, v: date) -> date:
         if v < date.today():
             raise ValueError("予約日は今日以降の日付を指定してください")
         max_date = date.today() + timedelta(days=60)
@@ -34,8 +36,9 @@ class ReservationBase(BaseModel):
             raise ValueError("予約は2ヶ月先までしか受け付けていません")
         return v
 
-    @validator("reservation_time")
-    def validate_time(cls, v):
+    @field_validator("reservation_time")
+    @classmethod
+    def validate_time(cls, v: str) -> str:
         try:
             # HH:MM形式の文字列をtime型に変換
             hour, minute = map(int, v.split(":"))
@@ -94,11 +97,12 @@ class ReservationInDB(ReservationInDBBase):
 class Reservation(ReservationInDBBase):
     """APIレスポンス用予約モデル"""
 
-    class Config:
-        json_encoders = {
+    model_config = {
+        "json_encoders": {
             date: lambda v: v.isoformat(),
             datetime: lambda v: v.isoformat(),
         }
+    }
 
 
 class TimeSlot(BaseModel):
@@ -108,5 +112,4 @@ class TimeSlot(BaseModel):
     is_available: bool = Field(..., description="予約可能かどうか")
     remaining_capacity: int = Field(..., ge=0, description="残り定員")
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}

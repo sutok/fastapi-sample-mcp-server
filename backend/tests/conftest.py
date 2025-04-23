@@ -38,6 +38,22 @@ def mock_firebase_auth():
 
 
 @pytest.fixture
+def mock_requests():
+    """requestsのモック"""
+    with patch("requests.post") as mock_post:
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "idToken": "test_token",
+            "email": "test@example.com",
+            "localId": "test_user_id",
+            "expiresIn": "3600",
+        }
+        mock_post.return_value = mock_response
+        yield mock_post
+
+
+@pytest.fixture
 def auth_headers():
     """認証ヘッダーの作成"""
     return {"Authorization": "Bearer test_token"}
