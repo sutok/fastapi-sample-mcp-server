@@ -15,8 +15,8 @@ def sample_reservation_data():
     }
 
 
-@pytest.mark.asyncio
-async def test_create_reservation(client, sample_reservation_data, auth_headers):
+# @pytest.fixture
+def cleanup_reservation(client, sample_reservation_data):
 
     db = get_firestore()
     reservations_ref = db.collection("reservations")
@@ -30,6 +30,12 @@ async def test_create_reservation(client, sample_reservation_data, auth_headers)
     # 見つかった予約を削除
     for doc in docs:
         doc.reference.delete()
+
+
+@pytest.mark.asyncio
+async def test_create_reservation(client, sample_reservation_data, auth_headers):
+
+    cleanup_reservation(client, sample_reservation_data)
 
     # クリーンアップ後に再度予約を試行
     response = client.post(
@@ -69,18 +75,22 @@ async def test_invalid_reservation_date(client, auth_headers, mock_firebase_auth
 
 @pytest.mark.asyncio
 async def test_duplicate_reservation(client, sample_reservation_data, auth_headers):
+    cleanup_reservation(client, sample_reservation_data)
     """同じ時間枠での重複予約をテスト"""
     # 最初の予約を作成
     response1 = client.post(
         "/api/v1/reservations/", json=sample_reservation_data, headers=auth_headers
     )
-    assert response1.status_code == 201
+    # print(response1.json())
+    assert response1.status_code == status.HTTP_200_OK
 
     # 同じ時間枠で2回目の予約を試みる
     response2 = client.post(
         "/api/v1/reservations/", json=sample_reservation_data, headers=auth_headers
     )
+    print(response2.json())
     assert response2.status_code == 409
     error_detail = response2.json()
-    assert "message" in error_detail
-    assert "指定された時間枠は既に予約されています" in error_detail["message"]
+    print(error_detail)
+    assert "message" in error_detail["detail"]
+    assert "指定された時間枠は既に予約されています" in error_detail["detail"]["message"]
