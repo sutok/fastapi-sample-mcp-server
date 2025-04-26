@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ProfileEdit from "./pages/ProfileEdit";
 import Logout from "./pages/Logout";
+import SignUp from "./pages/SignUp";
 
 const theme = createTheme({
   palette: {
@@ -24,6 +25,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile/edit" element={<ProfileEdit />} />
           <Route path="/logout" element={<Logout />} />
