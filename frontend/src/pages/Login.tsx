@@ -12,18 +12,28 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 
 const defaultTheme = createTheme();
 
 export default function Login() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const [error, setError] = React.useState<string | null>(null);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError(null);
     const data = new FormData(event.currentTarget);
-    // ここで認証処理を実装
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    const email = data.get("email") as string;
+    const password = data.get("password") as string;
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // 認証成功時の処理（例：ダッシュボードへ遷移）
+      window.location.href = "/dashboard";
+    } catch (e: any) {
+      setError("ログインに失敗しました");
+    }
   };
 
   return (
@@ -89,6 +99,11 @@ export default function Login() {
                 control={<Checkbox value="remember" color="primary" />}
                 label="ログイン状態を保持する"
               />
+              {error && (
+                <Typography color="error" sx={{ mt: 1 }}>
+                  {error}
+                </Typography>
+              )}
               <Button
                 type="submit"
                 fullWidth
@@ -97,13 +112,13 @@ export default function Login() {
               >
                 サインイン
               </Button>
-              <Grid container>
-                <Grid item xs>
+              <Grid>
+                <Grid>
                   <Link href="#" variant="body2">
                     パスワードをお忘れですか？
                   </Link>
                 </Grid>
-                <Grid item>
+                <Grid>
                   <Link href="#" variant="body2">
                     {"アカウントをお持ちでない方はこちら"}
                   </Link>
