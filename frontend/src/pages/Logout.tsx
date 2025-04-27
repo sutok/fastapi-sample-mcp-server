@@ -7,10 +7,12 @@ export default function Logout() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    signOut(auth).then(() => {
+    const doLogout = async () => {
+      await signOut(auth);
       navigate("/login");
-    });
+    };
+    doLogout();
   }, [navigate]);
 
-  return <div>ログアウト中...</div>;
+  return null; // 何も表示しない
 }

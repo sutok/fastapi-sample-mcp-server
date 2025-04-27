@@ -1,4 +1,7 @@
 import * as React from "react";
+import { signOut } from "firebase/auth";
+import { auth } from "../../firebase";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   CssBaseline,
@@ -28,7 +31,21 @@ const menuItems = [
   { text: "プロフィール", icon: <AccountCircleIcon />, path: "/profile" },
 ];
 
-const DefaultLayout: React.FC<Props> = ({ children }) => {
+const DefaultLayout: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    console.log("logout click");
+    try {
+      await signOut(auth);
+      navigate("/login");
+    } catch (e) {
+      alert("ログアウトに失敗しました");
+    }
+  };
+
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -75,7 +92,7 @@ const DefaultLayout: React.FC<Props> = ({ children }) => {
           </List>
           <Divider />
           <ListItem disablePadding>
-            <ListItemButton component="a" href={"/logout"}>
+            <ListItemButton component="a" href="/logout">
               <ListItemIcon>
                 <LogoutIcon />
               </ListItemIcon>
