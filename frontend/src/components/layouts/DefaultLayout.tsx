@@ -25,9 +25,7 @@ type Props = {
 };
 
 const menuItems = [
-  { text: "ダッシュボード", icon: <DashboardIcon />, path: "/dashboard" },
   { text: "プロフィール", icon: <AccountCircleIcon />, path: "/profile" },
-  { text: "ログアウト", icon: <LogoutIcon />, path: "/logout" },
 ];
 
 const DefaultLayout: React.FC<Props> = ({ children }) => {
@@ -58,6 +56,14 @@ const DefaultLayout: React.FC<Props> = ({ children }) => {
         <Toolbar />
         <Box sx={{ overflow: "auto" }}>
           <List>
+            <ListItem disablePadding>
+              <ListItemButton component="a" href={"/dashboard"}>
+                <ListItemIcon>
+                  <DashboardIcon />
+                </ListItemIcon>
+                <ListItemText primary={"ダッシュボード"} />
+              </ListItemButton>
+            </ListItem>
             {menuItems.map((item) => (
               <ListItem key={item.text} disablePadding>
                 <ListItemButton component="a" href={item.path}>
@@ -68,6 +74,14 @@ const DefaultLayout: React.FC<Props> = ({ children }) => {
             ))}
           </List>
           <Divider />
+          <ListItem disablePadding>
+            <ListItemButton component="a" href={"/logout"}>
+              <ListItemIcon>
+                <LogoutIcon />
+              </ListItemIcon>
+              <ListItemText primary={"ログアウト"} />
+            </ListItemButton>
+          </ListItem>
         </Box>
       </Drawer>
       <Box
