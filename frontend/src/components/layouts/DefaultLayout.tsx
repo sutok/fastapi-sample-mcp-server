@@ -1,74 +1,84 @@
-import React from "react";
-import { Box, Container, Paper, Typography, useTheme } from "@mui/material";
-import { Outlet } from "react-router-dom";
+import * as React from "react";
+import {
+  Box,
+  CssBaseline,
+  AppBar,
+  Toolbar,
+  Typography,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  ListItemButton,
+} from "@mui/material";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import LogoutIcon from "@mui/icons-material/Logout";
+import Dashboard from "../../pages/Dashboard";
 
-export const UserLayout: React.FC = () => {
-  const theme = useTheme();
+const drawerWidth = 240;
 
+type Props = {
+  children: React.ReactNode;
+};
+
+const menuItems = [
+  { text: "ダッシュボード", icon: <DashboardIcon />, path: "/dashboard" },
+  { text: "プロフィール", icon: <AccountCircleIcon />, path: "/profile" },
+  { text: "ログアウト", icon: <LogoutIcon />, path: "/logout" },
+];
+
+const DefaultLayout: React.FC<Props> = ({ children }) => {
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: theme.palette.grey[100],
-      }}
-    >
-      {/* ヘッダー部分 */}
-      <Box
+    <Box sx={{ display: "flex" }}>
+      <CssBaseline />
+      <AppBar
+        position="fixed"
+        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      >
+        <Toolbar>
+          <Typography variant="h6" noWrap component="div">
+            サービス名ダッシュボード
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      <Drawer
+        variant="permanent"
         sx={{
-          py: 2,
-          backgroundColor: theme.palette.primary.main,
-          color: theme.palette.primary.contrastText,
+          width: drawerWidth,
+          flexShrink: 0,
+          [`& .MuiDrawer-paper`]: {
+            width: drawerWidth,
+            boxSizing: "border-box",
+          },
         }}
       >
-        <Container maxWidth="sm">
-          <Typography variant="h5" component="h1">
-            サービス名
-          </Typography>
-        </Container>
-      </Box>
-
-      {/* メインコンテンツ */}
-      <Container
+        <Toolbar />
+        <Box sx={{ overflow: "auto" }}>
+          <List>
+            {menuItems.map((item) => (
+              <ListItem key={item.text} disablePadding>
+                <ListItemButton component="a" href={item.path}>
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.text} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+          <Divider />
+        </Box>
+      </Drawer>
+      <Box
         component="main"
-        maxWidth="sm"
-        sx={{
-          mt: 4,
-          mb: 4,
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
+        sx={{ flexGrow: 1, bgcolor: "background.default", p: 3 }}
       >
-        <Paper
-          elevation={3}
-          sx={{
-            p: 4,
-            width: "100%",
-            maxWidth: "sm",
-          }}
-        >
-          <Outlet />
-        </Paper>
-      </Container>
-
-      {/* フッター部分 */}
-      <Box
-        component="footer"
-        sx={{
-          py: 3,
-          backgroundColor: theme.palette.grey[200],
-          textAlign: "center",
-        }}
-      >
-        <Container maxWidth="sm">
-          <Typography variant="body2" color="text.secondary">
-            © {new Date().getFullYear()} サービス名. All rights reserved.
-          </Typography>
-        </Container>
+        <Toolbar />
+        {children}
       </Box>
     </Box>
   );
 };
+
+export default DefaultLayout;

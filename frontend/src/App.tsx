@@ -23,13 +23,10 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* 認証関連ページ用レイアウト */}
         <Route element={<LoginLayout />}>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
         </Route>
-
-        {/* その他のルート */}
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </BrowserRouter>
