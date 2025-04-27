@@ -18,7 +18,7 @@ import { useAuth } from "../hooks/useAuth";
 
 const defaultTheme = createTheme();
 
-export default function SignUp() {
+const SignUp: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null);
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -28,6 +28,7 @@ export default function SignUp() {
       navigate("/dashboard");
     }
   }, [user, loading, navigate]);
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
@@ -45,88 +46,54 @@ export default function SignUp() {
   };
 
   return (
-    <ThemeProvider theme={defaultTheme}>
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: (theme) =>
-            theme.palette.mode === "light"
-              ? theme.palette.grey[50]
-              : theme.palette.grey[900],
-        }}
-      >
-        <Container component="main" maxWidth="xs">
-          <CssBaseline />
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              p: 4,
-              bgcolor: "background.paper",
-              borderRadius: 2,
-              boxShadow: 3,
-            }}
-          >
-            <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
-              <LockOutlinedIcon />
-            </Avatar>
-            <Typography component="h1" variant="h5">
-              新規登録
-            </Typography>
-            <Box
-              component="form"
-              onSubmit={handleSubmit}
-              noValidate
-              sx={{ mt: 1 }}
-            >
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                id="email"
-                label="メールアドレス"
-                name="email"
-                autoComplete="email"
-                autoFocus
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="password"
-                label="パスワード"
-                type="password"
-                id="password"
-                autoComplete="new-password"
-              />
-              {error && (
-                <Typography color="error" sx={{ mt: 1 }}>
-                  {error}
-                </Typography>
-              )}
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-              >
-                新規登録
-              </Button>
-              <Grid container justifyContent="flex-end">
-                <Grid>
-                  <Link href="/login" variant="body2">
-                    すでにアカウントをお持ちの方はこちら
-                  </Link>
-                </Grid>
-              </Grid>
-            </Box>
-          </Box>
-        </Container>
+    <>
+      <Typography component="h2" variant="h5" textAlign="center" gutterBottom>
+        新規登録
+      </Typography>
+      <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          id="email"
+          label="メールアドレス"
+          name="email"
+          autoComplete="email"
+          autoFocus
+        />
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          name="password"
+          label="パスワード"
+          type="password"
+          id="password"
+          autoComplete="new-password"
+        />
+        {error && (
+          <Typography color="error" sx={{ mt: 1 }}>
+            {error}
+          </Typography>
+        )}
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          sx={{ mt: 3, mb: 2 }}
+        >
+          新規登録
+        </Button>
+        <Grid container justifyContent="flex-end">
+          <Grid>
+            <Link href="/login" variant="body2">
+              すでにアカウントをお持ちの方はこちら
+            </Link>
+          </Grid>
+        </Grid>
       </Box>
-    </ThemeProvider>
+    </>
   );
-}
+};
+
+export default SignUp;

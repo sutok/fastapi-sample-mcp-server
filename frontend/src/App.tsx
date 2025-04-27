@@ -3,6 +3,7 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Button from "@mui/material/Button";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LoginLayout from "./components/layouts/LoginLayout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ProfileEdit from "./pages/ProfileEdit";
@@ -20,18 +21,18 @@ const theme = createTheme({
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <BrowserRouter>
-        <Routes>
+    <BrowserRouter>
+      <Routes>
+        {/* 認証関連ページ用レイアウト */}
+        <Route element={<LoginLayout />}>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/profile/edit" element={<ProfileEdit />} />
-          <Route path="/logout" element={<Logout />} />
-        </Routes>
-      </BrowserRouter>
-    </ThemeProvider>
+        </Route>
+
+        {/* その他のルート */}
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
