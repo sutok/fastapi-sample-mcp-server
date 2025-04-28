@@ -273,6 +273,7 @@ class CRUDReservation:
         else:
             raise ValueError("date_input must be str or datetime.date")
 
+        print(date_obj)
         # 企業コード
         company_id = None
         # 店舗コード
@@ -288,33 +289,36 @@ class CRUDReservation:
             date_obj, settings.get_business_hours_end()
         )
 
-        # 日時の範囲から予約を取得。company_idとstore_idが在る場合はその条件も追加
-        query = self.collection.where(
-            filter=firestore.FieldFilter(
-                "reservation_date", ">=", business_start_datetime
-            )
-        ).where(
-            filter=firestore.FieldFilter("reservation_date", "<", business_end_datetime)
-        )
+        # 営業時間・枠生成
+        business_start = settings.get_business_hours_start()
+        business_end = settings.get_business_hours_end()
+        slot_minutes = settings.TIME_SLOT_MINUTES
+        # Firestoreから予約済み枠を取得
+        date_str = date_obj.strftime("%Y-%m-%d")
+        query = self.collection.where("reservation_date", "==", date_str)
 
         # company_idとstore_idが在る場合はその条件も追加
         if company_id is not None:
-            query = query.where(
-                filter=firestore.FieldFilter("company_id", "==", company_id)
-            )
+            query = query.where("company_id", "==", company_id)
         if store_id is not None:
-            query = query.where(
-                filter=firestore.FieldFilter("store_id", "==", store_id)
-            )
+            query = query.where("store_id", "==", store_id)
 
-        # 日時の範囲から予約を取得
+        slots = []
+        current = datetime.combine(date_obj, business_start)
+        end = datetime.combine(date_obj, business_end)
+        while current < end:
+            slots.append(current.strftime("%H:%M"))
+            current += timedelta(minutes=slot_minutes)
+
         reservations = query.get()
+        reserved_times = [doc.to_dict().get("reservation_time") for doc in reservations]
 
-        # 予約のデータを取得
-        for doc in reservations:
-            print("--------------------------------")
-            print(f"Document ID: {doc.id}, Data: {doc.to_dict()}")
-        return reservations
+        # available_slotsリストを作成
+        available_slots = [
+            {"time": slot, "is_reserved": slot in reserved_times} for slot in slots
+        ]
+
+        return available_slots
 
 
 # CRUDReservationのインスタンスを作成
