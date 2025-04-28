@@ -1,11 +1,12 @@
 import * as React from "react";
+import { styled } from "@mui/material/styles";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
   CssBaseline,
-  AppBar,
+  AppBar as MuiAppBar,
   Toolbar,
   Typography,
   Drawer,
@@ -21,36 +22,45 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
-import Dashboard from "../../pages/Dashboard";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 
 const drawerWidth = 240;
 
-type Props = {
-  children: React.ReactNode;
-};
+const AppBar = styled(MuiAppBar)(({ theme }) => ({
+  zIndex: theme.zIndex.drawer + 1,
+  width: '100%',
+  position: 'fixed'
+}));
 
-const menuItems = [
-  { text: "ダッシュボード", icon: <DashboardIcon />, path: "/dashboard" },
-  { text: "プロフィール", icon: <AccountCircleIcon />, path: "/profile" },
-  { text: "ログアウト", icon: <LogoutIcon />, logout: true },
-];
+const DrawerHeader = styled("div")(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  padding: theme.spacing(0, 1),
+  ...theme.mixins.toolbar,
+}));
 
 const DefaultLayout: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    if (isMobile) {
+      setOpen(false);
+    }
+  }, [isMobile]);
+
   const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+    setOpen(!open);
   };
 
   const handleLogout = async () => {
-    console.log("logout click");
     try {
       await signOut(auth);
       navigate("/login");
@@ -59,113 +69,137 @@ const DefaultLayout: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const drawer = (
-    <Box sx={{ overflow: "auto" }}>
-      <List>
-        {menuItems.map((item) => (
-          <React.Fragment key={item.text}>
-            {item.text === "ログアウト" && <Divider />}
-            <ListItem disablePadding>
-              {item.logout ? (
-                <ListItemButton onClick={handleLogout}>
-                  <ListItemIcon>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.text} />
-                </ListItemButton>
-              ) : (
-                <ListItemButton component="a" href={item.path}>
-                  <ListItemIcon>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.text} />
-                </ListItemButton>
-              )}
-            </ListItem>
-          </React.Fragment>
-        ))}
-      </List>
-    </Box>
-  );
+  const menuItems = [
+    { text: "ダッシュボード", icon: <DashboardIcon />, path: "/dashboard" },
+    { text: "プロフィール", icon: <AccountCircleIcon />, path: "/profile" },
+    { text: "ログアウト", icon: <LogoutIcon />, logout: true },
+  ];
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
+    <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      <AppBar
-        position="fixed"
-        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
-      >
+      <AppBar>
         <Toolbar>
-          {isMobile && (
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 2, display: { sm: "none" } }}
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
+          <IconButton
+            color="inherit"
+            aria-label="toggle drawer"
+            onClick={handleDrawerToggle}
+            edge="start"
+            sx={{ mr: 2 }}
+          >
+            <MenuIcon />
+          </IconButton>
           <Typography variant="h6" noWrap component="div">
             サービス名ダッシュボード
           </Typography>
         </Toolbar>
       </AppBar>
 
-      {/* モバイル用Drawer */}
       <Drawer
-        variant="temporary"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{
-          keepMounted: true, // モバイルパフォーマンス向上
-        }}
+        variant={isMobile ? "temporary" : "permanent"}
+        open={open}
+        onClose={isMobile ? handleDrawerToggle : undefined}
         sx={{
-          display: { xs: "block", sm: "none" },
-          "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+          width: drawerWidth,
+          flexShrink: 0,
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+            boxSizing: "border-box",
+            whiteSpace: "nowrap",
+            ...(isMobile ? {} : {
+              width: open ? drawerWidth : theme.spacing(7),
+              transition: theme.transitions.create("width", {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
+            }),
+          },
         }}
       >
-        <Toolbar />
-        {drawer}
+        <DrawerHeader>
+          <IconButton onClick={handleDrawerToggle}>
+            <ChevronLeftIcon />
+          </IconButton>
+        </DrawerHeader>
+        <Divider />
+        <List>
+          {menuItems.map((item) => (
+            <ListItem key={item.text} disablePadding sx={{ display: "block" }}>
+              {item.logout ? (
+                <ListItemButton
+                  onClick={handleLogout}
+                  sx={{
+                    minHeight: 48,
+                    justifyContent: open ? "initial" : "center",
+                    px: 2.5,
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: open ? 3 : "auto",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    sx={{ opacity: open ? 1 : 0 }}
+                  />
+                </ListItemButton>
+              ) : (
+                <ListItemButton
+                  component="a"
+                  href={item.path}
+                  sx={{
+                    minHeight: 48,
+                    justifyContent: open ? "initial" : "center",
+                    px: 2.5,
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: open ? 3 : "auto",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    sx={{ opacity: open ? 1 : 0 }}
+                  />
+                </ListItemButton>
+              )}
+            </ListItem>
+          ))}
+        </List>
       </Drawer>
 
-      {/* PC用Drawer */}
-      <Drawer
-        variant="permanent"
-        sx={{
-          display: { xs: "none", sm: "block" },
-          "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
-        }}
-        open
-      >
-        <Toolbar />
-        {drawer}
-      </Drawer>
-
-      <Box sx={{ flexGrow: 1, display: 'flex' }}>
-        <Box
-          component="main"
-          sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}
-        >
-          <Toolbar />
-          {children}
-        </Box>
-      </Box>
-
-      {/* フッター（画面下部に固定） */}
       <Box
-        component="footer"
+        component="main"
         sx={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          width: '100%',
-          bgcolor: 'grey.200',
-          py: 2,
-          textAlign: 'center',
-          zIndex: (theme) => theme.zIndex.drawer + 1,
+          flexGrow: 1,
+          p: 3,
+          mt: { xs: 7, sm: 8 },
+          width: {
+            xs: '100%',
+            sm: `calc(100% - ${open ? drawerWidth : theme.spacing(7)}px)`
+          },
+          ml: {
+            xs: 0,
+            sm: open ? `${drawerWidth}px` : `${theme.spacing(7)}px`
+          },
+          transition: theme.transitions.create(['width', 'margin'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
         }}
       >
-        <Typography variant="body2" color="text.secondary">
-          © {new Date().getFullYear()} サービス名. All rights reserved.
-        </Typography>
+        <DrawerHeader />
+        {children}
       </Box>
     </Box>
   );
