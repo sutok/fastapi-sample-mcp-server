@@ -273,35 +273,14 @@ class CRUDReservation:
         else:
             raise ValueError("date_input must be str or datetime.date")
 
-        print(date_obj)
-        # 企業コード
+        # 企業コード・店舗コード（必要なら利用）
         company_id = None
-        # 店舗コード
         store_id = None
-
-        # date_objにbussiness_start_timeを足した日時を取得
-        business_start_datetime = datetime.combine(
-            date_obj, settings.get_business_hours_start()
-        )
-
-        # date_objにbussiness_end_timeを足した日時を取得
-        business_end_datetime = datetime.combine(
-            date_obj, settings.get_business_hours_end()
-        )
 
         # 営業時間・枠生成
         business_start = settings.get_business_hours_start()
         business_end = settings.get_business_hours_end()
         slot_minutes = settings.TIME_SLOT_MINUTES
-        # Firestoreから予約済み枠を取得
-        date_str = date_obj.strftime("%Y-%m-%d")
-        query = self.collection.where("reservation_date", "==", date_str)
-
-        # company_idとstore_idが在る場合はその条件も追加
-        if company_id is not None:
-            query = query.where("company_id", "==", company_id)
-        if store_id is not None:
-            query = query.where("store_id", "==", store_id)
 
         slots = []
         current = datetime.combine(date_obj, business_start)
@@ -310,12 +289,29 @@ class CRUDReservation:
             slots.append(current.strftime("%H:%M"))
             current += timedelta(minutes=slot_minutes)
 
+        # Firestoreから予約済み枠を取得
+        date_str = date_obj.strftime("%Y-%m-%d")
+        query = self.collection.where("reservation_date", "==", date_str)
+        if company_id is not None:
+            query = query.where("company_id", "==", company_id)
+        if store_id is not None:
+            query = query.where("store_id", "==", store_id)
+
         reservations = query.get()
-        reserved_times = [doc.to_dict().get("reservation_time") for doc in reservations]
+        # 時間ごとにuser_idをマッピング
+        reserved_map = {
+            doc.to_dict().get("reservation_time"): doc.to_dict().get("user_id")
+            for doc in reservations
+        }
 
         # available_slotsリストを作成
         available_slots = [
-            {"time": slot, "is_reserved": slot in reserved_times} for slot in slots
+            {
+                "time": slot,
+                "is_reserved": slot in reserved_map,
+                "user_id": reserved_map.get(slot) if slot in reserved_map else None,
+            }
+            for slot in slots
         ]
 
         return available_slots
