@@ -3,6 +3,7 @@ from datetime import datetime, date, timedelta
 from firebase_admin import firestore
 from ..models.reservation import ReservationCreate, ReservationUpdate, ReservationStatus
 from ..core.firebase import get_firestore
+from ..core.config import settings
 import logging
 
 logger = logging.getLogger(__name__)
@@ -17,10 +18,6 @@ class CRUDReservation:
         self.db = get_firestore()
         self.collection = self.db.collection("reservations")
 
-    def _date_to_timestamp(self, date_obj: date) -> datetime:
-        """dateオブジェクトをdatetimeに変換"""
-        return datetime.combine(date_obj, datetime.min.time())
-
     async def _generate_reception_number(self, reservation_date: date) -> int:
         """
         指定された日付の受付番号を生成
@@ -32,8 +29,8 @@ class CRUDReservation:
             int: 生成された受付番号
         """
         # 指定日の開始時刻と終了時刻を設定
-        start_of_day = self._date_to_timestamp(reservation_date)
-        end_of_day = self._date_to_timestamp(reservation_date + timedelta(days=1))
+        start_of_day = reservation_date.strftime("%Y-%m-%d")
+        end_of_day = (reservation_date + timedelta(days=1)).strftime("%Y-%m-%d")
 
         # 指定日の予約を全て取得
         query = (
@@ -74,7 +71,7 @@ class CRUDReservation:
 
         reservation_data = {
             "user_id": user_id,
-            "reservation_date": self._date_to_timestamp(reservation.reservation_date),
+            "reservation_date": reservation.reservation_date.strftime("%Y-%m-%d"),
             "reservation_time": reservation.reservation_time,
             "notes": reservation.notes,
             "status": ReservationStatus.CONFIRMED.value,
@@ -168,13 +165,13 @@ class CRUDReservation:
 
         if date_from:
             query = query.where(
-                "reservation_date", ">=", self._date_to_timestamp(date_from)
+                "reservation_date", ">=", date_from.strftime("%Y-%m-%d")
             )
         if date_to:
             query = query.where(
                 "reservation_date",
                 "<",
-                self._date_to_timestamp(date_to + timedelta(days=1)),
+                (date_to + timedelta(days=1)).strftime("%Y-%m-%d"),
             )
 
         # 日付でソート
@@ -202,8 +199,8 @@ class CRUDReservation:
             int: 予約数
         """
         # dateをdatetimeに変換
-        date_timestamp = self._date_to_timestamp(reservation_date)
-        next_day = self._date_to_timestamp(reservation_date + timedelta(days=1))
+        date_timestamp = reservation_date.strftime("%Y-%m-%d")
+        next_day = (reservation_date + timedelta(days=1)).strftime("%Y-%m-%d")
 
         query = (
             self.collection.where("reservation_date", ">=", date_timestamp)
@@ -228,8 +225,8 @@ class CRUDReservation:
             bool: 予約済みの場合True
         """
         # dateをdatetimeに変換
-        date_timestamp = self._date_to_timestamp(reservation_date)
-        next_day = self._date_to_timestamp(reservation_date + timedelta(days=1))
+        date_timestamp = reservation_date.strftime("%Y-%m-%d")
+        next_day = (reservation_date + timedelta(days=1)).strftime("%Y-%m-%d")
 
         # whereメソッドを使用（filterではなく）
         query = (
@@ -248,9 +245,10 @@ class CRUDReservation:
         """予約情報を更新"""
         update_data = reservation_update.dict(exclude_unset=True)
         if "reservation_date" in update_data:
-            update_data["reservation_date"] = self._date_to_timestamp(
-                update_data["reservation_date"]
+            update_data["reservation_date"] = update_data["reservation_date"].strftime(
+                "%Y-%m-%d"
             )
+
         update_data["updated_at"] = datetime.utcnow()
 
         doc_ref = self.collection.document(reservation_id)
@@ -266,6 +264,57 @@ class CRUDReservation:
             doc_ref.delete()
             return True
         return False
+
+    async def get_available_slots(self, date_input):
+        if isinstance(date_input, str):
+            date_obj = datetime.strptime(date_input, "%Y-%m-%d").date()
+        elif isinstance(date_input, date):
+            date_obj = date_input
+        else:
+            raise ValueError("date_input must be str or datetime.date")
+
+        # 企業コード
+        company_id = None
+        # 店舗コード
+        store_id = None
+
+        # date_objにbussiness_start_timeを足した日時を取得
+        business_start_datetime = datetime.combine(
+            date_obj, settings.get_business_hours_start()
+        )
+
+        # date_objにbussiness_end_timeを足した日時を取得
+        business_end_datetime = datetime.combine(
+            date_obj, settings.get_business_hours_end()
+        )
+
+        # 日時の範囲から予約を取得。company_idとstore_idが在る場合はその条件も追加
+        query = self.collection.where(
+            filter=firestore.FieldFilter(
+                "reservation_date", ">=", business_start_datetime
+            )
+        ).where(
+            filter=firestore.FieldFilter("reservation_date", "<", business_end_datetime)
+        )
+
+        # company_idとstore_idが在る場合はその条件も追加
+        if company_id is not None:
+            query = query.where(
+                filter=firestore.FieldFilter("company_id", "==", company_id)
+            )
+        if store_id is not None:
+            query = query.where(
+                filter=firestore.FieldFilter("store_id", "==", store_id)
+            )
+
+        # 日時の範囲から予約を取得
+        reservations = query.get()
+
+        # 予約のデータを取得
+        for doc in reservations:
+            print("--------------------------------")
+            print(f"Document ID: {doc.id}, Data: {doc.to_dict()}")
+        return reservations
 
 
 # CRUDReservationのインスタンスを作成
