@@ -30,8 +30,8 @@ const drawerWidth = 240;
 
 const AppBar = styled(MuiAppBar)(({ theme }) => ({
   zIndex: theme.zIndex.drawer + 1,
-  width: "100%",
-  position: "fixed",
+  width: '100%',
+  position: 'fixed'
 }));
 
 const DrawerHeader = styled("div")(({ theme }) => ({
@@ -106,15 +106,13 @@ const DefaultLayout: React.FC<{ children: React.ReactNode }> = ({
             width: drawerWidth,
             boxSizing: "border-box",
             whiteSpace: "nowrap",
-            ...(isMobile
-              ? {}
-              : {
-                  width: open ? drawerWidth : theme.spacing(7),
-                  transition: theme.transitions.create("width", {
-                    easing: theme.transitions.easing.sharp,
-                    duration: theme.transitions.duration.enteringScreen,
-                  }),
-                }),
+            ...(isMobile ? {} : {
+              width: open ? drawerWidth : theme.spacing(7),
+              transition: theme.transitions.create("width", {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
+            }),
           },
         }}
       >
@@ -185,19 +183,16 @@ const DefaultLayout: React.FC<{ children: React.ReactNode }> = ({
         sx={{
           flexGrow: 1,
           p: 3,
-          mt: { xs: 6, sm: 7 },
+          mt: { xs: 7, sm: 8 },
           width: {
-            xs: "100%",
-            sm: `calc(100% - ${open ? drawerWidth : theme.spacing(7)}px)`,
+            xs: '100%',
+            sm: `calc(100% - ${open ? drawerWidth : theme.spacing(7)}px)`
           },
           ml: {
             xs: 0,
-            sm:
-              open == false
-                ? `${drawerWidth - 420}px`
-                : `${theme.spacing(7)}px`,
+            sm: open ? `${drawerWidth}px` : `${theme.spacing(7)}px`
           },
-          transition: theme.transitions.create(["width", "margin"], {
+          transition: theme.transitions.create(['width', 'margin'], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen,
           }),

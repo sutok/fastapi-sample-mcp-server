@@ -22,7 +22,7 @@ const Dashboard: React.FC = () => {
   return (
     <DefaultLayout>
       <Typography variant="h4" gutterBottom>
-        ダッシュボード
+        待ち状況
       </Typography>
       <Paper sx={{ p: 2, mt: 2 }}>
         <Box>
