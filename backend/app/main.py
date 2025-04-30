@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from .core.config import settings, configure_warnings
 from .core.firebase import initialize_firebase
-from .api.v1.endpoints import auth, users, reservations, companies
+from .api.v1.endpoints import auth, users, reservations, companies, stores
 import logging
 
 # アプリケーション起動時に一度だけFirebaseを初期化
@@ -36,6 +36,9 @@ def create_app() -> FastAPI:
     app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
     app.include_router(
         companies.router, prefix=f"{settings.API_V1_STR}/companies", tags=["companies"]
+    )
+    app.include_router(
+        stores.router, prefix=f"{settings.API_V1_STR}/stores", tags=["stores"]
     )
     app.include_router(
         users.router, prefix=f"{settings.API_V1_STR}/users", tags=["users"]
