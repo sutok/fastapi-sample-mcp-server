@@ -80,3 +80,112 @@ async def delete_user_me(
         return {"message": "ユーザーが正常に削除されました"}
     except Exception as e:
         raise HTTPException(status_code=400, detail="ユーザーの削除に失敗しました")
+
+
+@router.put("/users/{user_id}/role")
+async def update_user_role(
+    user_id: str,
+    role_update: dict,
+    current_user: dict = Depends(SecurityService.verify_firebase_token),
+):
+    """
+    ユーザーのロールを更新（管理者のみ実行可能）
+    """
+    # 管理者権限チェック
+    if current_user.get("role") not in ["system_admin", "company_admin"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="この操作を実行する権限がありません",
+        )
+
+    try:
+        # カスタムクレームを更新
+        custom_claims = {
+            "role": role_update["role"],
+            "company_id": role_update.get("company_id"),
+            "store_id": role_update.get("store_id"),
+        }
+        await SecurityService.set_custom_claims(user_id, custom_claims)
+
+        return {"message": "ユーザーロールが正常に更新されました"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"ロールの更新に失敗しました: {str(e)}",
+        )
+
+
+"""
+APIエンドポイントでの権限チェックは以下のように行う
+"""
+
+"""
+@router.post("/some-protected-endpoint")
+async def protected_endpoint(
+    current_user: dict = Depends(SecurityService.verify_firebase_token),
+):
+    # ロールベースのアクセス制御
+    # システム管理者、企業管理者、店舗管理者のみがアクセス可能 settings.pyで管理したほうが楽になるはず
+    if current_user["role"] not in ["system_admin", "company_admin", "store_admin"]: 
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="この操作を実行する権限がありません",
+        )
+
+    # 企業・店舗レベルのアクセス制御
+    if current_user["company_id"] != requested_company_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="この企業のデータにアクセスする権限がありません",
+        )
+
+    # 処理の実行
+    ...
+"""
+
+
+@router.delete("/cleanup", include_in_schema=False)
+async def cleanup_auth(
+    current_user: dict = Depends(SecurityService.verify_firebase_token),
+) -> dict:
+    """
+    開発環境用：認証情報のクリーンアップ
+    システム管理者のみが実行可能
+    """
+    if settings.ENVIRONMENT != "development":
+        raise HTTPException(
+            status_code=403,
+            detail="This endpoint is only available in development environment",
+        )
+
+    # システム管理者権限チェック
+    if current_user.get("role") != "system_admin":
+        raise HTTPException(
+            status_code=403,
+            detail="この操作を実行する権限がありません。システム管理者のみが実行できます。",
+        )
+
+    try:
+        # Firebase Authのユーザー一覧を取得
+        users = auth.list_users()
+        deleted_count = 0
+
+        for user in users.users:
+            # システム管理者自身は削除しない
+            if user.uid != current_user["uid"]:
+                # ユーザーを削除
+                auth.delete_user(user.uid)
+                # Firestoreのユーザーデータも削除
+                await crud_user.delete(user.uid)
+                deleted_count += 1
+
+        return {
+            "message": "Cleanup completed successfully",
+            "deleted_users_count": deleted_count,
+        }
+    except Exception as e:
+        logger.error(f"Error during cleanup: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"クリーンアップ処理中にエラーが発生しました: {str(e)}",
+        )

@@ -56,6 +56,38 @@ firebase_auth = FirebaseAuthBearer()
 
 class SecurityService:
     @staticmethod
+    async def set_custom_claims(uid: str, claims: dict) -> None:
+        """
+        ユーザーのカスタムクレームを設定
+
+        Args:
+            uid (str): ユーザーID
+            claims (dict): 設定するカスタムクレーム
+                例: {
+                    "role": "store_admin",
+                    "company_id": "company_123",
+                    "store_id": "store_456"
+                }
+        """
+        try:
+            # 開発環境の場合はスキップ（エミュレータではカスタムクレーム機能は利用不可）
+            if settings.ENVIRONMENT == "development":
+                logger.info(
+                    f"Development environment: Skipping custom claims setting for uid {uid}"
+                )
+                return
+
+            # 本番環境での処理
+            auth.set_custom_user_claims(uid, claims)
+            logger.info(f"Custom claims set for user {uid}: {claims}")
+        except Exception as e:
+            logger.error(f"Error setting custom claims for user {uid}: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="カスタムクレームの設定に失敗しました",
+            )
+
+    @staticmethod
     async def verify_firebase_token(
         credentials: HTTPAuthorizationCredentials = Depends(firebase_auth),
     ) -> dict:
@@ -75,6 +107,10 @@ class SecurityService:
                         "uid": decoded_token.get("user_id", "test_user_id"),
                         "email": decoded_token.get("email", "test@example.com"),
                         "email_verified": decoded_token.get("email_verified", True),
+                        # 開発環境用のデフォルトのカスタムクレーム
+                        "role": "store_admin",
+                        "company_id": "test_company_id",
+                        "store_id": "test_store_id",
                     }
                 except Exception as e:
                     logger.error(f"Token verification error in emulator: {str(e)}")
@@ -91,6 +127,12 @@ class SecurityService:
                     "uid": decoded_token["uid"],
                     "email": decoded_token.get("email"),
                     "email_verified": decoded_token.get("email_verified", False),
+                    # カスタムクレームを取得
+                    "role": decoded_token.get(
+                        "role", "user"
+                    ),  # デフォルトは一般ユーザー
+                    "company_id": decoded_token.get("company_id"),
+                    "store_id": decoded_token.get("store_id"),
                 }
             except Exception as e:
                 logger.error(f"Token verification error: {str(e)}")

@@ -34,7 +34,10 @@ class CRUDUser:
                 "id": uid,  # uidをidとして使用
                 "email": user.email,
                 "username": user.username,
-                "is_active": True,
+                "is_active": user.is_active,
+                "role": user.role,
+                "company_id": user.company_id,
+                "store_id": user.store_id,
                 "created_at": current_time,
                 "updated_at": current_time,
             }

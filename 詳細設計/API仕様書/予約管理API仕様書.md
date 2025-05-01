@@ -300,14 +300,14 @@
 {
   "data": {
     "date": "string (ISO8601)",
+    "target_date": "2024-07-01",
     "available_slots": [
-      {
-        "time": "string (HH:mm)",
-        "available": true,
-        "max_duration": 180,
-        "max_people": 10
-      }
-    ]
+      {"time":"09:00", "is_resarved": true/false},
+      {"time":"09:30", "is_resarved": true/false},
+      {"time":"10:00", "is_resarved": true/false},
+      ...
+    ],
+    "is_open": true
   }
 }
 ```

@@ -9,12 +9,32 @@ class UserBase(BaseModel):
     email: EmailStr = Field(..., description="メールアドレス")
     username: str = Field(..., description="ユーザー名")
     is_active: bool = Field(default=True, description="アクティブ状態")
+    role: str = Field(
+        default="user",
+        description="ユーザーのロール",
+        enum=["system_admin", "company_admin", "store_admin", "staff", "user"],
+    )
+    company_id: Optional[str] = Field(None, description="企業ID")
+    store_id: Optional[str] = Field(None, description="店舗ID")
 
 
 class UserCreate(UserBase):
     """ユーザー作成時のモデル"""
 
-    password: str
+    password: str = Field(..., description="パスワード", min_length=8)
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "user@example.com",
+                "username": "testuser",
+                "password": "strongpassword123",
+                "role": "user",
+                "company_id": "company_123",
+                "store_id": "store_456",
+                "is_active": True,
+            }
+        }
 
 
 class UserUpdate(BaseModel):
