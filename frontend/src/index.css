@@ -24,3 +24,9 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+.firebase-emulator-warning {
+  opacity: 0.2;
+  pointer-events: none;
+  font-size: 1rem;
+}
