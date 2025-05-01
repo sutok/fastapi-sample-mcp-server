@@ -10,6 +10,8 @@ import ProfileEdit from "./pages/ProfileEdit";
 import Logout from "./pages/Logout";
 import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
+import CustomBottomNavigation from "./components/common/BottomNavigation";
+import Box from "@mui/material/Box";
 
 const theme = createTheme({
   palette: {
@@ -28,15 +30,18 @@ const App: React.FC = () => {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
-        <Routes>
-          <Route element={<LoginLayout />}>
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/logout" element={<Logout />} />
-          </Route>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/" element={<Home />} />
-        </Routes>
+        <Box sx={{ pb: 7 }}>
+          <Routes>
+            <Route element={<LoginLayout />}>
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/logout" element={<Logout />} />
+            </Route>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/" element={<Home />} />
+          </Routes>
+          <CustomBottomNavigation />
+        </Box>
       </BrowserRouter>
     </ThemeProvider>
   );

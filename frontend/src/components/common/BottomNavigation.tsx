@@ -1,39 +1,65 @@
 import React from "react";
-import { BottomNavigation, BottomNavigationAction } from "@mui/material";
+import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-// import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import HistoryIcon from "@mui/icons-material/History";
+import BusinessIcon from "@mui/icons-material/Business";
+import StoreIcon from "@mui/icons-material/Store";
+import DashboardIcon from "@mui/icons-material/Dashboard";
 import HomeIcon from "@mui/icons-material/Home";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const CustomBottomNavigation = () => {
-  const [value, setValue] = React.useState(0);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // 現在のパスに基づいて選択されたタブを設定
+  const getCurrentValue = () => {
+    const path = location.pathname;
+    if (path === "/") return 0;
+    if (path.startsWith("/companies")) return 1;
+    if (path.startsWith("/stores")) return 2;
+    if (path.startsWith("/profile")) return 3;
+    return 0;
+  };
 
   return (
-    <BottomNavigation
-      value={value}
-      onChange={(event, newValue) => {
-        setValue(newValue);
+    <Paper
+      sx={{
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
       }}
-      sx={{ position: "fixed", bottom: 0, width: "100%" }}
+      elevation={3}
     >
-      <BottomNavigationAction
-        label="ホーム"
-        icon={<HomeIcon />}
-        onClick={() => navigate("/dashboard")}
-      />
-      <BottomNavigationAction
-        label="予約一覧"
-        icon={<HistoryIcon />}
-        onClick={() => navigate("/dashboard")}
-      />
-      <BottomNavigationAction
-        label="プロフィール"
-        icon={<AccountCircleIcon />}
-        onClick={() => navigate("/profile")}
-      />
-    </BottomNavigation>
+      <BottomNavigation
+        value={getCurrentValue()}
+        onChange={(event, newValue) => {
+          switch (newValue) {
+            case 0:
+              navigate("/dashboard");
+              break;
+            case 1:
+              navigate("/companies");
+              break;
+            case 2:
+              navigate("/stores");
+              break;
+            case 3:
+              navigate("/profile");
+              break;
+          }
+        }}
+      >
+        <BottomNavigationAction label="ホーム" icon={<DashboardIcon />} />
+        <BottomNavigationAction label="企業" icon={<BusinessIcon />} />
+        <BottomNavigationAction label="店舗" icon={<StoreIcon />} />
+        <BottomNavigationAction
+          label="プロフィール"
+          icon={<AccountCircleIcon />}
+        />
+      </BottomNavigation>
+    </Paper>
   );
 };
 

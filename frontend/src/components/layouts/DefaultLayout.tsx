@@ -24,6 +24,8 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import BottomNavigation from "@mui/material/BottomNavigation";
+import BottomNavigationAction from "@mui/material/BottomNavigationAction";
 import { useTheme } from "@mui/material/styles";
 
 const drawerWidth = 240;
