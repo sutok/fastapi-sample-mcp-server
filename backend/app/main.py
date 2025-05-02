@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings, configure_warnings
 from .core.firebase import initialize_firebase
 from .api.v1.endpoints import auth, users, reservations, companies, stores
@@ -30,6 +31,14 @@ def create_app() -> FastAPI:
         docs_url=f"{settings.API_V1_STR}/docs",
         redoc_url=f"{settings.API_V1_STR}/redoc",
         debug=settings.DEBUG,
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],  # 必要に応じて制限
+        allow_credentials=True,
+        allow_methods=["*"],  # ここが重要
+        allow_headers=["*"],  # ここが重要
     )
 
     # APIルーターの設定
