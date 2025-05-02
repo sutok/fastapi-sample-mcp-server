@@ -30,6 +30,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
 import { useTheme } from "@mui/material/styles";
+import { useAuth } from "../../hooks/useAuth";
 
 const drawerWidth = 240;
 
@@ -54,12 +55,19 @@ const DefaultLayout: React.FC<{ children: React.ReactNode }> = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
   React.useEffect(() => {
     if (isMobile) {
       setOpen(false);
     }
   }, [isMobile]);
+
+  React.useEffect(() => {
+    if (!loading && !user) {
+      navigate("/login");
+    }
+  }, [user, loading, navigate]);
 
   const handleDrawerToggle = () => {
     setOpen(!open);
