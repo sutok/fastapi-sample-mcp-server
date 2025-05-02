@@ -12,6 +12,7 @@ import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
 import CustomBottomNavigation from "./components/common/BottomNavigation";
 import Box from "@mui/material/Box";
+import Companies from "./pages/Companies";
 
 const theme = createTheme({
   palette: {
@@ -39,6 +40,7 @@ const App: React.FC = () => {
             </Route>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/" element={<Home />} />
+            <Route path="/companies" element={<Companies />} />
           </Routes>
           <CustomBottomNavigation />
         </Box>

@@ -76,7 +76,7 @@ const DefaultLayout: React.FC<{ children: React.ReactNode }> = ({
 
   const menuItems = [
     { text: "ダッシュボード", icon: <DashboardIcon />, path: "/dashboard" },
-    { text: "企業一覧", icon: <BusinessIcon />, path: "/company" },
+    { text: "企業一覧", icon: <BusinessIcon />, path: "/companies" },
     { text: "店舗一覧", icon: <StoreIcon />, path: "/store" },
     { text: "予約一覧", icon: <ScheduleIcon />, path: "/schedule" },
     { text: "プロフィール", icon: <AccountCircleIcon />, path: "/profile" },
