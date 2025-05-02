@@ -20,9 +20,12 @@ import {
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import BusinessIcon from "@mui/icons-material/Business";
+import StoreIcon from "@mui/icons-material/Store";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ScheduleIcon from "@mui/icons-material/Schedule";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
@@ -73,6 +76,9 @@ const DefaultLayout: React.FC<{ children: React.ReactNode }> = ({
 
   const menuItems = [
     { text: "ダッシュボード", icon: <DashboardIcon />, path: "/dashboard" },
+    { text: "企業一覧", icon: <BusinessIcon />, path: "/company" },
+    { text: "店舗一覧", icon: <StoreIcon />, path: "/store" },
+    { text: "予約一覧", icon: <ScheduleIcon />, path: "/schedule" },
     { text: "プロフィール", icon: <AccountCircleIcon />, path: "/profile" },
     { text: "ログアウト", icon: <LogoutIcon />, logout: true },
   ];
@@ -187,7 +193,7 @@ const DefaultLayout: React.FC<{ children: React.ReactNode }> = ({
         sx={{
           flexGrow: 1,
           p: 3,
-          mt: { xs: 7, sm: 8 },
+          mt: { xs: 4, sm: 5 },
           width: {
             xs: "100%",
             sm: `calc(100% - ${open ? drawerWidth : theme.spacing(7)}px)`,
