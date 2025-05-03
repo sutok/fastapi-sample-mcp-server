@@ -4,7 +4,6 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import BusinessIcon from "@mui/icons-material/Business";
 import StoreIcon from "@mui/icons-material/Store";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const CustomBottomNavigation = () => {
@@ -16,7 +15,7 @@ const CustomBottomNavigation = () => {
     const path = location.pathname;
     if (path === "/") return 0;
     if (path.startsWith("/companies")) return 1;
-    if (path.startsWith("/stores")) return 2;
+    if (path.startsWith("/branches")) return 2;
     if (path.startsWith("/profile")) return 3;
     return 0;
   };
@@ -43,7 +42,7 @@ const CustomBottomNavigation = () => {
               navigate("/companies");
               break;
             case 2:
-              navigate("/stores");
+              navigate("/branches");
               break;
             case 3:
               navigate("/profile");

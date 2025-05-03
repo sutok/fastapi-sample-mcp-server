@@ -27,8 +27,8 @@ import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import BottomNavigation from "@mui/material/BottomNavigation";
-import BottomNavigationAction from "@mui/material/BottomNavigationAction";
+// import BottomNavigation from "@mui/material/BottomNavigation";
+// import BottomNavigationAction from "@mui/material/BottomNavigationAction";
 import { useTheme } from "@mui/material/styles";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -85,7 +85,7 @@ const DefaultLayout: React.FC<{ children: React.ReactNode }> = ({
   const menuItems = [
     { text: "ダッシュボード", icon: <DashboardIcon />, path: "/dashboard" },
     { text: "企業一覧", icon: <BusinessIcon />, path: "/companies" },
-    { text: "店舗一覧", icon: <StoreIcon />, path: "/store" },
+    // { text: "店舗一覧", icon: <StoreIcon />, path: "/branches" },
     { text: "予約一覧", icon: <ScheduleIcon />, path: "/schedule" },
     { text: "プロフィール", icon: <AccountCircleIcon />, path: "/profile" },
     { text: "ログアウト", icon: <LogoutIcon />, logout: true },
@@ -209,7 +209,7 @@ const DefaultLayout: React.FC<{ children: React.ReactNode }> = ({
           ml: {
             xs: 0,
             sm:
-              open == false
+              open === false
                 ? `${drawerWidth - 420}px`
                 : `${theme.spacing(7)}px`,
           },

@@ -1,18 +1,19 @@
 import React from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import Button from "@mui/material/Button";
+// import Button from "@mui/material/Button";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoginLayout from "./components/layouts/LoginLayout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import ProfileEdit from "./pages/ProfileEdit";
+// import ProfileEdit from "./pages/ProfileEdit";
 import Logout from "./pages/Logout";
 import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
 import CustomBottomNavigation from "./components/common/BottomNavigation";
 import Box from "@mui/material/Box";
 import Companies from "./pages/Companies";
+import Branches from "./pages/Branches";
 
 const theme = createTheme({
   palette: {
@@ -41,6 +42,7 @@ const App: React.FC = () => {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/" element={<Home />} />
             <Route path="/companies" element={<Companies />} />
+            <Route path="/company/branches" element={<Branches />} />
           </Routes>
           <CustomBottomNavigation />
         </Box>

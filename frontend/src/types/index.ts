@@ -10,9 +10,9 @@ export interface Company {
   updated_at: string;
 }
 
-export interface Store {
+export interface Branch {
   id: string;
-  store_name: string;
+  branch_name: string;
   address: string;
   phone_number: string;
   email: string;

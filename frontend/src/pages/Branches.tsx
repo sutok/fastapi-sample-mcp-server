@@ -12,25 +12,26 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { useCompanies } from "../hooks/useCompanies";
-import DefaultLayout from "../components/layouts/DefaultLayout";
 import { useNavigate } from "react-router-dom";
+import DefaultLayout from "../components/layouts/DefaultLayout";
+// 店舗一覧取得用のカスタムフック（仮定）
+import { useBranches } from "../hooks/useBranches";
 
-const Companies: React.FC = () => {
-  const { companies, loading, error } = useCompanies();
+const Branches: React.FC = () => {
+  const { branches, loading, error } = useBranches();
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
-  const filteredCompanies = useMemo(() => {
-    if (!search) return companies;
-    return companies.filter(
-      (company) =>
-        company.company_name.toLowerCase().includes(search.toLowerCase()) ||
-        (company.address &&
-          company.address.toLowerCase().includes(search.toLowerCase())) ||
-        (company.phone_number && company.phone_number.includes(search))
+  const filteredBranches = useMemo(() => {
+    if (!search) return branches;
+    return branches.filter(
+      (branch) =>
+        branch.branch_name.toLowerCase().includes(search.toLowerCase()) ||
+        (branch.address &&
+          branch.address.toLowerCase().includes(search.toLowerCase())) ||
+        (branch.phone_number && branch.phone_number.includes(search))
     );
-  }, [companies, search]);
+  }, [branches, search]);
 
   if (loading) {
     return (
@@ -41,7 +42,7 @@ const Companies: React.FC = () => {
         minHeight="50vh"
       >
         <CircularProgress />
-        <Typography sx={{ ml: 2 }}>企業データを読み込み中...</Typography>
+        <Typography sx={{ ml: 2 }}>店舗データを読み込み中...</Typography>
       </Box>
     );
   }
@@ -50,7 +51,7 @@ const Companies: React.FC = () => {
     <DefaultLayout>
       <Box sx={{ maxWidth: 900, mx: "auto", mt: 4 }}>
         <Typography variant="h4" gutterBottom>
-          企業一覧
+          店舗一覧
         </Typography>
         <Box sx={{ mb: 2 }}>
           <input
@@ -66,37 +67,31 @@ const Companies: React.FC = () => {
             {error}
           </Alert>
         )}
-        {filteredCompanies.length === 0 ? (
+        {filteredBranches.length === 0 ? (
           <Paper sx={{ p: 3, textAlign: "center" }}>
-            <Typography>企業が登録されていません</Typography>
+            <Typography>店舗が登録されていません</Typography>
           </Paper>
         ) : (
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>企業名</TableCell>
+                  <TableCell>店舗名</TableCell>
                   <TableCell>住所</TableCell>
                   <TableCell>TEL</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredCompanies.map((company) => (
-                  <TableRow key={company.id} hover>
-                    <TableCell>
-                      <span
-                        style={{
-                          color: "#1976d2",
-                          cursor: "pointer",
-                          textDecoration: "underline",
-                        }}
-                        onClick={() => navigate(`/company/branches`)}
-                      >
-                        {company.company_name}
-                      </span>
-                    </TableCell>
-                    <TableCell>{company.address || "説明なし"}</TableCell>
-                    <TableCell>{company.phone_number || ""}</TableCell>
+                {filteredBranches.map((branch) => (
+                  <TableRow
+                    key={branch.id}
+                    hover
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/branches/${branch.id}`)}
+                  >
+                    <TableCell>{branch.branch_name}</TableCell>
+                    <TableCell>{branch.address || "説明なし"}</TableCell>
+                    <TableCell>{branch.phone_number || ""}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -108,4 +103,4 @@ const Companies: React.FC = () => {
   );
 };
 
-export default Companies;
+export default Branches;

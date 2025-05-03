@@ -2,22 +2,11 @@ import React from "react";
 import DefaultLayout from "../components/layouts/DefaultLayout";
 import { Typography, Paper, Box } from "@mui/material";
 // import { useAuth } from "../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 // import { useEffect } from "react";
 
 const Dashboard: React.FC = () => {
-  // const { user, loading } = useAuth();
-  const navigate = useNavigate();
-
-  // useEffect(() => {
-  //   if (!loading && !user) {
-  //     navigate("/login");
-  //   }
-  // }, [user, loading, navigate]);
-
-  // if (loading) {
-  //   return <div>Loading...</div>;
-  // }
+  // const navigate = useNavigate();
 
   return (
     <DefaultLayout>

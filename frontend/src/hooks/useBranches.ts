@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { config } from "../core/config";
-import { Company } from "../types";
+import { Branch } from "../types";
 import { auth } from "../firebase";
 import { User, onAuthStateChanged } from "firebase/auth";
 /**
  * 企業一覧を管理するカスタムフック
  */
-export const useCompanies = () => {
-  const [companies, setCompanies] = useState<Company[]>([]);
+export const useBranches = () => {
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user, loading: authLoading } = useAuth();
@@ -16,11 +16,11 @@ export const useCompanies = () => {
     if (authLoading) return;
     if (!user) return;
 
-    const fetchCompanies = async () => {
+    const fetchBranches = async () => {
       setLoading(true);
       try {
         const idToken = await user.getIdToken();
-        const response = await fetch(`${config.api.baseUrl}/companies/`, {
+        const response = await fetch(`${config.api.baseUrl}/stores/`, {
           headers: {
             Authorization: `Bearer ${idToken}`,
             "Content-Type": "application/json",
@@ -32,7 +32,7 @@ export const useCompanies = () => {
           );
         }
         const data = await response.json();
-        setCompanies(data);
+        setBranches(data);
         setError(null);
       } catch (err: any) {
         setError("企業データの取得に失敗しました");
@@ -40,10 +40,10 @@ export const useCompanies = () => {
         setLoading(false);
       }
     };
-    fetchCompanies();
+    fetchBranches();
   }, [user, authLoading]);
 
-  return { companies, loading, error };
+  return { branches, loading, error };
 };
 
 export function useAuth() {

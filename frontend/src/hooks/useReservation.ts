@@ -10,8 +10,8 @@ interface Reservation {
   number: number; // 予約番号
   status: "waiting" | "called" | "completed" | "cancelled"; // 予約状態
   created_at: string; // 予約作成日時
-  store_id: string;
-  store_name: string;
+  branch_id: string;
+  branch_name: string;
 }
 
 /**
@@ -38,7 +38,7 @@ export const useReservation = (storeId: string | null) => {
       const idToken = await currentUser.getIdToken();
       // 指定された店舗の現在の予約を取得
       const response = await fetch(
-        `${config.api.baseUrl}/reservations/current?store_id=${storeId}`,
+        `${config.api.baseUrl}/reservations/current?branch_id=${storeId}`,
         {
           headers: {
             Authorization: `Bearer ${idToken}`,
@@ -80,7 +80,7 @@ export const useReservation = (storeId: string | null) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          store_id: storeId,
+          branch_id: storeId,
         }),
       });
 
