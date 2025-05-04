@@ -66,7 +66,7 @@ class SecurityService:
                 例: {
                     "role": "store_admin",
                     "company_id": "company_123",
-                    "store_id": "store_456"
+                    "branch_id": "store_456"
                 }
         """
         try:
@@ -110,7 +110,7 @@ class SecurityService:
                         # 開発環境用のデフォルトのカスタムクレーム
                         "role": "store_admin",
                         "company_id": "test_company_id",
-                        "store_id": "test_store_id",
+                        "branch_id": "test_branch_id",
                     }
                 except Exception as e:
                     logger.error(f"Token verification error in emulator: {str(e)}")
@@ -132,7 +132,7 @@ class SecurityService:
                         "role", "user"
                     ),  # デフォルトは一般ユーザー
                     "company_id": decoded_token.get("company_id"),
-                    "store_id": decoded_token.get("store_id"),
+                    "branch_id": decoded_token.get("branch_id"),
                 }
             except Exception as e:
                 logger.error(f"Token verification error: {str(e)}")

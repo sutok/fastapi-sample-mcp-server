@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings, configure_warnings
 from .core.firebase import initialize_firebase
-from .api.v1.endpoints import auth, users, reservations, companies, stores
+from .api.v1.endpoints import auth, users, reservations, companies, branches
 import logging
 
 # アプリケーション起動時に一度だけFirebaseを初期化
@@ -47,7 +47,7 @@ def create_app() -> FastAPI:
         companies.router, prefix=f"{settings.API_V1_STR}/companies", tags=["companies"]
     )
     app.include_router(
-        stores.router, prefix=f"{settings.API_V1_STR}/stores", tags=["stores"]
+        branches.router, prefix=f"{settings.API_V1_STR}/branches", tags=["branches"]
     )
     app.include_router(
         users.router, prefix=f"{settings.API_V1_STR}/users", tags=["users"]

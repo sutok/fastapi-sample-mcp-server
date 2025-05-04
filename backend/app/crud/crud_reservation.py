@@ -275,7 +275,7 @@ class CRUDReservation:
 
         # 企業コード・店舗コード（必要なら利用）
         company_id = None
-        store_id = None
+        branch_id = None
 
         # 営業時間・枠生成
         business_start = settings.get_business_hours_start()
@@ -294,8 +294,8 @@ class CRUDReservation:
         query = self.collection.where("reservation_date", "==", date_str)
         if company_id is not None:
             query = query.where("company_id", "==", company_id)
-        if store_id is not None:
-            query = query.where("store_id", "==", store_id)
+        if branch_id is not None:
+            query = query.where("branch_id", "==", branch_id)
 
         reservations = query.get()
         # 時間ごとにuser_idをマッピング

@@ -103,7 +103,7 @@ async def update_user_role(
         custom_claims = {
             "role": role_update["role"],
             "company_id": role_update.get("company_id"),
-            "store_id": role_update.get("store_id"),
+            "branch_id": role_update.get("branch_id"),
         }
         await SecurityService.set_custom_claims(user_id, custom_claims)
 

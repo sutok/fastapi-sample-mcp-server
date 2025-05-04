@@ -37,7 +37,7 @@ class CRUDUser:
                 "is_active": user.is_active,
                 "role": user.role,
                 "company_id": user.company_id,
-                "store_id": user.store_id,
+                "branch_id": user.branch_id,
                 "created_at": current_time,
                 "updated_at": current_time,
             }

@@ -80,7 +80,7 @@ async def signup(user_create: UserCreate) -> Any:
         custom_claims = {
             "role": "user",  # デフォルトロール
             "company_id": user.company_id,  # ユーザーモデルから取得
-            "store_id": user.store_id,  # ユーザーモデルから取得
+            "branch_id": user.branch_id,  # ユーザーモデルから取得
         }
         await SecurityService.set_custom_claims(response_data["localId"], custom_claims)
 

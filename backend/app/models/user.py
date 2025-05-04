@@ -15,7 +15,7 @@ class UserBase(BaseModel):
         enum=["system_admin", "company_admin", "store_admin", "staff", "user"],
     )
     company_id: Optional[str] = Field(None, description="企業ID")
-    store_id: Optional[str] = Field(None, description="店舗ID")
+    branch_id: Optional[str] = Field(None, description="店舗ID")
 
 
 class UserCreate(UserBase):
@@ -31,7 +31,7 @@ class UserCreate(UserBase):
                 "password": "strongpassword123",
                 "role": "user",
                 "company_id": "company_123",
-                "store_id": "store_456",
+                "branch_id": "store_456",
                 "is_active": True,
             }
         }
