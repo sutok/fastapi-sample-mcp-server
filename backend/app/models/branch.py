@@ -16,7 +16,7 @@ class BranchBase(BaseModel):
     """店舗の基本情報モデル"""
 
     company_id: str = Field(..., description="所属企業ID")
-    store_name: str = Field(..., description="店舗名")
+    branch_name: str = Field(..., description="店舗名")
     address: str = Field(..., description="住所")
     phone: str = Field(..., description="電話番号")
     email: Optional[str] = Field(None, description="メールアドレス")
@@ -25,7 +25,7 @@ class BranchBase(BaseModel):
         None, max_length=500, description="備考（最大500文字）"
     )
 
-    @field_validator("store_name")
+    @field_validator("branch_name")
     @classmethod
     def validate_name(cls, v: str) -> str:
         if v == "":
@@ -49,7 +49,7 @@ class BranchCreate(BranchBase):
 class BranchUpdate(BaseModel):
     """店舗更新モデル"""
 
-    store_name: Optional[str] = Field(None, description="店舗名")
+    branch_name: Optional[str] = Field(None, description="店舗名")
     address: Optional[str] = Field(None, description="住所")
     phone: Optional[str] = Field(None, description="電話番号")
     email: Optional[str] = Field(None, description="メールアドレス")

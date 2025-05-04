@@ -14,6 +14,7 @@ import CustomBottomNavigation from "./components/common/BottomNavigation";
 import Box from "@mui/material/Box";
 import Companies from "./pages/Companies";
 import Branches from "./pages/Branches";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const theme = createTheme({
   palette: {
@@ -27,27 +28,31 @@ const theme = createTheme({
   },
 });
 
+const queryClient = new QueryClient();
+
 const App: React.FC = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <BrowserRouter>
-        <Box sx={{ pb: 7 }}>
-          <Routes>
-            <Route element={<LoginLayout />}>
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<SignUp />} />
-              <Route path="/logout" element={<Logout />} />
-            </Route>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/" element={<Home />} />
-            <Route path="/companies" element={<Companies />} />
-            <Route path="/company/branches" element={<Branches />} />
-          </Routes>
-          <CustomBottomNavigation />
-        </Box>
-      </BrowserRouter>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <BrowserRouter>
+          <Box sx={{ pb: 7 }}>
+            <Routes>
+              <Route element={<LoginLayout />}>
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<SignUp />} />
+                <Route path="/logout" element={<Logout />} />
+              </Route>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/companies" element={<Companies />} />
+              <Route path="/company/branches" element={<Branches />} />
+            </Routes>
+            <CustomBottomNavigation />
+          </Box>
+        </BrowserRouter>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 };
 

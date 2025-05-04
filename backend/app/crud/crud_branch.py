@@ -42,7 +42,24 @@ class CRUDBranch:
             query = query.where("company_id", "==", company_id)
 
         docs = query.limit(limit).offset(skip).stream()
-        return [BranchInDB(**{**doc.to_dict(), "id": doc.id}) for doc in docs]
+        return [
+            BranchInDB(
+                **{
+                    **doc.to_dict(),
+                    "id": doc.id,
+                    "company_id": doc.to_dict().get("company_id", "default_company_id"),
+                    "branch_name": doc.to_dict().get(
+                        "branch_name", "default_branch_name"
+                    ),
+                    "address": doc.to_dict().get("address", "default_address"),
+                    "phone": doc.to_dict().get("phone", "default_phone"),
+                    "business_hours": doc.to_dict().get(
+                        "business_hours", "default_hours"
+                    ),
+                }
+            )
+            for doc in docs
+        ]
 
     async def update(
         self, branch_id: str, obj_in: BranchUpdate
