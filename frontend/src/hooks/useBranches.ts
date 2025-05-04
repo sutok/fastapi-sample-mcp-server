@@ -3,10 +3,12 @@ import { config } from "../core/config";
 import { Branch } from "../types";
 import { auth } from "../firebase";
 import { User, onAuthStateChanged } from "firebase/auth";
+import { useAuth } from "./useAuth";
+
 /**
  * 企業一覧を管理するカスタムフック
  */
-export const useBranches = () => {
+export const useBranches = (company_id?: string) => {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -15,22 +17,12 @@ export const useBranches = () => {
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
+    if (!company_id) return;
 
     const fetchBranches = async () => {
       setLoading(true);
       try {
         const idToken = await user.getIdToken();
-
-        // ユーザー情報取得
-        const userInfo = await fetch(`${config.api.baseUrl}/users/me`, {
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-        const userInfoData = await userInfo.json();
-        const company_id = userInfoData.company_id;
-
         // 店舗一覧取得
         const response = await fetch(
           `${config.api.baseUrl}/branches/?company_id=${company_id}`,
@@ -56,22 +48,7 @@ export const useBranches = () => {
       }
     };
     fetchBranches();
-  }, [user, authLoading]);
+  }, [user, authLoading, company_id]);
 
   return { branches, loading, error };
 };
-
-export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  return { user, loading };
-}

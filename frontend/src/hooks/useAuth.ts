@@ -8,6 +8,17 @@ export function useAuth() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      // console.log(firebaseUser?.getIdToken());
+      // ユーザー情報取得
+      // const userInfo = await fetch(`${config.api.baseUrl}/users/me`, {
+      //   headers: {
+      //     Authorization: `Bearer ${idToken}`,
+      //     "Content-Type": "application/json",
+      //   },
+      // });
+      // const userInfoData = await userInfo.json();
+      // const company_id = userInfoData.company_id;
+
       setUser(firebaseUser);
       setLoading(false);
     });

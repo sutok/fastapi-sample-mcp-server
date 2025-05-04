@@ -46,7 +46,10 @@ const App: React.FC = () => {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/" element={<Home />} />
               <Route path="/companies" element={<Companies />} />
-              <Route path="/company/branches" element={<Branches />} />
+              <Route
+                path="/company/:company_id/branches"
+                element={<Branches />}
+              />
             </Routes>
             <CustomBottomNavigation />
           </Box>

@@ -12,20 +12,25 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import DefaultLayout from "../components/layouts/DefaultLayout";
 // 店舗一覧取得用のカスタムフック（仮定）
 import { useBranches } from "../hooks/useBranches";
+import { Branch } from "../types";
 
 const Branches: React.FC = () => {
-  const { branches, loading, error } = useBranches();
+  // URLパラメータからcompany_idを取得
+  const { company_id } = useParams<{ company_id: string }>();
+  // company_idをuseBranchesに渡す
+  const { branches, loading, error } = useBranches(company_id);
+  console.log("branches", branches);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
   const filteredBranches = useMemo(() => {
     if (!search) return branches;
     return branches.filter(
-      (branch) =>
+      (branch: Branch) =>
         branch.branch_name.toLowerCase().includes(search.toLowerCase()) ||
         (branch.address &&
           branch.address.toLowerCase().includes(search.toLowerCase())) ||
@@ -82,7 +87,7 @@ const Branches: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredBranches.map((branch) => (
+                {filteredBranches.map((branch: Branch) => (
                   <TableRow
                     key={branch.id}
                     hover
