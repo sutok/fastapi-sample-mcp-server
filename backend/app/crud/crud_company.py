@@ -6,10 +6,12 @@ from ..models.company import CompanyCreate, CompanyUpdate, CompanyInDB
 
 class CRUDCompany:
     def __init__(self):
+        # Firestoreクライアントとコレクションの初期化
         self.db = firestore.client()
         self.collection = self.db.collection("companies")
 
     async def create(self, obj_in: CompanyCreate) -> CompanyInDB:
+        # 新しい企業ドキュメントを作成
         doc_ref = self.collection.document()
         company_data = obj_in.model_dump()
         company_data.update(
@@ -23,18 +25,21 @@ class CRUDCompany:
         return CompanyInDB(**company_data)
 
     async def get(self, company_id: str) -> Optional[CompanyInDB]:
+        # 指定IDの企業情報を取得
         doc = self.collection.document(company_id).get()
         if doc.exists:
             return CompanyInDB(**{**doc.to_dict(), "id": doc.id})
         return None
 
     async def get_multi(self, skip: int = 0, limit: int = 100) -> List[CompanyInDB]:
+        # 企業一覧を取得（ページネーション対応）
         docs = self.collection.limit(limit).offset(skip).stream()
         return [CompanyInDB(**{**doc.to_dict(), "id": doc.id}) for doc in docs]
 
     async def update(
         self, company_id: str, obj_in: CompanyUpdate
     ) -> Optional[CompanyInDB]:
+        # 企業情報を更新
         doc_ref = self.collection.document(company_id)
         if not doc_ref.get().exists:
             return None
@@ -47,6 +52,7 @@ class CRUDCompany:
         return CompanyInDB(**{**updated_doc.to_dict(), "id": company_id})
 
     async def delete(self, company_id: str) -> bool:
+        # 企業情報を削除
         doc_ref = self.collection.document(company_id)
         if not doc_ref.get().exists:
             return False

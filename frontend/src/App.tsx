@@ -15,6 +15,7 @@ import Box from "@mui/material/Box";
 import Companies from "./pages/Companies";
 import Branches from "./pages/Branches";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Reservations from "./pages/Reservations";
 
 const theme = createTheme({
   palette: {
@@ -49,6 +50,10 @@ const App: React.FC = () => {
               <Route
                 path="/company/:company_id/branches"
                 element={<Branches />}
+              />
+              <Route
+                path="/company/:company_id/branches/:branch_id/reservations"
+                element={<Reservations />}
               />
             </Routes>
             <CustomBottomNavigation />

@@ -15,8 +15,12 @@ class ReservationStatus(str, Enum):
 class ReservationBase(BaseModel):
     """予約基本情報"""
 
+    company_id: str = Field(..., description="会社ID")
+    branch_id: str = Field(..., description="店舗ID")
+    user_id: str = Field(..., description="ユーザーID")
     reservation_date: date = Field(..., description="予約日")
     reservation_time: time = Field(..., description="予約時間枠")
+    reception_number: int = Field(..., description="受付番号")
     notes: Optional[str] = Field(None, description="備考")
 
 

@@ -71,6 +71,8 @@ class CRUDReservation:
 
         reservation_data = {
             "user_id": user_id,
+            "company_id": reservation.company_id,
+            "branch_id": reservation.branch_id,
             "reservation_date": reservation.reservation_date.strftime("%Y-%m-%d"),
             "reservation_time": reservation.reservation_time,
             "notes": reservation.notes,

@@ -91,8 +91,16 @@ const Branches: React.FC = () => {
                   <TableRow
                     key={branch.id}
                     hover
-                    style={{ cursor: "pointer" }}
-                    onClick={() => navigate(`/branches/${branch.id}`)}
+                    style={{
+                      color: "#1976d2",
+                      cursor: "pointer",
+                      textDecoration: "underline",
+                    }}
+                    onClick={() =>
+                      navigate(
+                        `/company/${company_id}/branches/${branch.id}/reservations`
+                      )
+                    }
                   >
                     <TableCell>{branch.branch_name}</TableCell>
                     <TableCell>{branch.address || "説明なし"}</TableCell>
