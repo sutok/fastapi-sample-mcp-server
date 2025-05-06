@@ -149,6 +149,8 @@ class CRUDReservation:
     async def get_multi_by_user(
         self,
         user_id: str,
+        company_id: str,
+        branch_id: str,
         skip: int = 0,
         limit: int = 10,
         date_from: Optional[date] = None,
@@ -168,6 +170,12 @@ class CRUDReservation:
             List[dict]: 予約一覧
         """
         query = self.collection.where("user_id", "==", user_id)
+
+        if company_id:
+            query = query.where("company_id", "==", company_id)
+
+        if branch_id:
+            query = query.where("branch_id", "==", branch_id)
 
         if date_from:
             query = query.where(

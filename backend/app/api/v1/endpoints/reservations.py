@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import List, Optional, Any
 from datetime import datetime, date
 from ....crud.crud_reservation import crud_reservation
@@ -36,6 +36,8 @@ async def create_reservation(
 @router.get("/", response_model=List[Reservation])
 async def read_reservations(
     current_user: dict = Depends(SecurityService.verify_firebase_token),
+    company_id: str = Optional[Query(None)],
+    branch_id: str = Optional[Query(None)],
     skip: int = 0,
     limit: int = 10,
     date_from: Optional[date] = None,
@@ -46,6 +48,8 @@ async def read_reservations(
 
     Args:
         current_user (dict): 現在のユーザー情報（依存性注入）
+        company_id: company_id
+        branch_id: branch_id
         skip (int): スキップする件数
         limit (int): 取得する件数
         date_from (date, optional): 検索開始日
@@ -56,6 +60,8 @@ async def read_reservations(
     """
     return await crud_reservation.get_multi_by_user(
         user_id=current_user["uid"],
+        company_id=company_id,
+        branch_id=branch_id,
         skip=skip,
         limit=limit,
         date_from=date_from,
