@@ -148,9 +148,9 @@ class CRUDReservation:
 
     async def get_multi_by_user(
         self,
-        user_id: str,
-        company_id: str,
-        branch_id: str,
+        user_id: Optional[str] = None,
+        company_id: Optional[str] = None,
+        branch_id: Optional[str] = None,
         skip: int = 0,
         limit: int = 10,
         date_from: Optional[date] = None,
@@ -169,7 +169,10 @@ class CRUDReservation:
         Returns:
             List[dict]: 予約一覧
         """
-        query = self.collection.where("user_id", "==", user_id)
+        query = self.collection
+
+        if user_id:
+            query = query.where("user_id", "==", user_id)
 
         if company_id:
             query = query.where("company_id", "==", company_id)
@@ -189,7 +192,7 @@ class CRUDReservation:
             )
 
         # 日付でソート
-        query = query.order_by("reservation_date")
+        query = query.order_by("reservation_at")
 
         docs = query.limit(limit).offset(skip).get()
         reservations = []

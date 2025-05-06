@@ -35,9 +35,9 @@ async def create_reservation(
 
 @router.get("/", response_model=List[Reservation])
 async def read_reservations(
-    current_user: dict = Depends(SecurityService.verify_firebase_token),
-    company_id: str = Optional[Query(None)],
-    branch_id: str = Optional[Query(None)],
+    current_user: Optional[dict] = Depends(SecurityService.verify_firebase_token),
+    company_id: Optional[str] = Query(None),
+    branch_id: Optional[str] = Query(None),
     skip: int = 0,
     limit: int = 10,
     date_from: Optional[date] = None,
@@ -58,6 +58,7 @@ async def read_reservations(
     Returns:
         List[Reservation]: 予約一覧
     """
+    print(current_user)
     return await crud_reservation.get_multi_by_user(
         user_id=current_user["uid"],
         company_id=company_id,
