@@ -18,7 +18,7 @@ class CRUDReservation:
         self.db = get_firestore()
         self.collection = self.db.collection("reservations")
 
-    async def _generate_reception_number(self, reservation_date: date) -> int:
+    async def _generate_reception_number(self, reservation_at: datetime) -> int:
         """
         指定された日付の受付番号を生成
 
@@ -29,14 +29,14 @@ class CRUDReservation:
             int: 生成された受付番号
         """
         # 指定日の開始時刻と終了時刻を設定
-        start_of_day = reservation_date.strftime("%Y-%m-%d")
-        end_of_day = (reservation_date + timedelta(days=1)).strftime("%Y-%m-%d")
+        start_of_day = reservation_at.strftime("%Y-%m-%d 00:00:00")
+        end_of_day = (reservation_at + timedelta(days=1)).strftime("%Y-%m-%d 23:59:59")
 
         # 指定日の予約を全て取得
         query = (
-            self.collection.where("reservation_date", ">=", start_of_day)
-            .where("reservation_date", "<", end_of_day)
-            .order_by("reservation_date")
+            self.collection.where("reservation_at", ">=", start_of_day)
+            .where("reservation_at", "<", end_of_day)
+            .order_by("reservation_at")
             .order_by("reception_number", direction=firestore.Query.DESCENDING)
             .limit(1)
         )
@@ -45,8 +45,7 @@ class CRUDReservation:
 
         # その日の最後の受付番号を取得し、+1した値を返す
         if docs:
-            last_number = docs[0].to_dict().get("reception_number", 0)
-            return last_number + 1
+            return len(docs) + 1
 
         # その日の最初の予約の場合は1を返す
         return 1
@@ -64,17 +63,14 @@ class CRUDReservation:
         """
         current_time = datetime.utcnow()
 
-        # 受付番号を生成
-        reception_number = await self._generate_reception_number(
-            reservation.reservation_date
-        )
+        # 受付番号を生成。順番のみなので時刻は現在時刻
+        reception_number = await self._generate_reception_number(current_time)
 
         reservation_data = {
             "user_id": user_id,
             "company_id": reservation.company_id,
             "branch_id": reservation.branch_id,
-            "reservation_date": reservation.reservation_date.strftime("%Y-%m-%d"),
-            "reservation_time": reservation.reservation_time,
+            "reservation_at": reservation.reservation_at,
             "notes": reservation.notes,
             "status": ReservationStatus.CONFIRMED.value,
             "reception_number": reception_number,
@@ -87,15 +83,23 @@ class CRUDReservation:
 
         @firestore.transactional
         def create_in_transaction(transaction, reservation_data):
-            # 受付番号の重複チェック
-            existing_query = self.collection.where(
-                "reservation_date", "==", reservation_data["reservation_date"]
-            ).where("reception_number", "==", reception_number)
+            # 予約日時の年月日で予約数をカウント
+            start_of_day = reservation_data["reservation_at"].replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
+            end_of_day = start_of_day + timedelta(days=1)
 
-            if len(existing_query.get()) > 0:
+            existing_query = (
+                self.collection.where("reservation_at", ">=", start_of_day)
+                .where("reservation_at", "<", end_of_day)
+                .get()
+            )
+            # 受付番号初期化
+            new_number = 0
+            if len(existing_query) > 0:
                 # 重複が見つかった場合は、再度受付番号を生成
-                new_number = reception_number + 1
-                reservation_data["reception_number"] = new_number
+                new_number = len(existing_query) + 1
+            reservation_data["reception_number"] = new_number
 
             # ドキュメントを作成
             doc_ref = self.collection.document()
@@ -114,7 +118,7 @@ class CRUDReservation:
             response_data = {
                 **final_data,
                 "id": doc_ref.id,
-                "reservation_date": reservation.reservation_date,
+                "reservation_at": reservation.reservation_at,
             }
             return response_data
 

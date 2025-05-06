@@ -18,8 +18,7 @@ class ReservationBase(BaseModel):
     company_id: str = Field(..., description="会社ID")
     branch_id: str = Field(..., description="店舗ID")
     user_id: str = Field(..., description="ユーザーID")
-    reservation_date: date = Field(..., description="予約日")
-    reservation_time: time = Field(..., description="予約時間枠")
+    reservation_at: datetime = Field(..., description="予約日時（Timestamp型）")
     reception_number: int = Field(..., description="受付番号")
     notes: Optional[str] = Field(None, description="備考")
 
@@ -33,7 +32,7 @@ class ReservationCreate(ReservationBase):
 class ReservationUpdate(BaseModel):
     """予約更新スキーマ"""
 
-    date: Optional[date] = Field(None, description="予約日")
+    # date: Optional[date] = Field(None, description="予約日")
     time_slot: Optional[time] = Field(None, description="予約時間枠")
     notes: Optional[str] = Field(None, description="備考")
     status: Optional[ReservationStatus] = Field(None, description="予約ステータス")

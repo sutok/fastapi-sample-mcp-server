@@ -28,20 +28,6 @@ async def create_reservation(
     Returns:
         Reservation: 作成された予約情報
     """
-    # 予約時間の重複チェック
-    is_taken = await crud_reservation.is_time_slot_taken(
-        reservation.reservation_date, reservation.reservation_time
-    )
-    if is_taken:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail={
-                "message": "指定された時間枠は既に予約されています",
-                "reservation_date": reservation.reservation_date.isoformat(),
-                "reservation_time": reservation.reservation_time,
-            },
-        )
-
     return await crud_reservation.create(
         reservation=reservation, user_id=current_user["uid"]
     )
