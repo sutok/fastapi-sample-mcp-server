@@ -1,23 +1,11 @@
-import React, { useState, useMemo } from "react";
-import {
-  Typography,
-  Paper,
-  Box,
-  CircularProgress,
-  Alert,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from "@mui/material";
+import React from "react";
+import { Typography, Box, CircularProgress } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import DefaultLayout from "../components/layouts/DefaultLayout";
 // 店舗一覧取得用のカスタムフック（仮定）
 import { useBranches } from "../hooks/useBranches";
 import BranchCard from "../components/common/Card/BranchCard";
-import { Branch } from "../types";
+// import { Branch } from "../types";
 
 const Branches: React.FC = () => {
   const navigate = useNavigate();
