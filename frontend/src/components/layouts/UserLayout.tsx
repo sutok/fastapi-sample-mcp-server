@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Container, Paper, Typography, useTheme } from "@mui/material";
 import { Outlet } from "react-router-dom";
 
-export const UserLayout: React.FC = () => {
+const UserLayout: React.FC = () => {
   const theme = useTheme();
 
   return (
@@ -11,7 +11,7 @@ export const UserLayout: React.FC = () => {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        backgroundColor: theme.palette.grey[100],
+        backgroundColor: theme.palette.grey[50],
       }}
     >
       {/* ヘッダー部分 */}
@@ -31,29 +31,30 @@ export const UserLayout: React.FC = () => {
       </Box>
 
       {/* メインコンテンツ */}
-      <Container
-        component="main"
-        maxWidth="sm"
+      <Box
         sx={{
-          mt: 4,
-          mb: 4,
           flex: 1,
           display: "flex",
-          flexDirection: "column",
+          justifyContent: "center",
           alignItems: "center",
+          py: 4,
         }}
       >
-        <Paper
-          elevation={3}
-          sx={{
-            p: 4,
-            width: "100%",
-            maxWidth: "sm",
-          }}
-        >
-          <Outlet />
-        </Paper>
-      </Container>
+        <Container component="main" maxWidth="xs">
+          <Paper
+            elevation={3}
+            sx={{
+              p: 4,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              borderRadius: 2,
+            }}
+          >
+            <Outlet />
+          </Paper>
+        </Container>
+      </Box>
 
       {/* フッター部分 */}
       <Box
@@ -73,3 +74,4 @@ export const UserLayout: React.FC = () => {
     </Box>
   );
 };
+export default UserLayout;

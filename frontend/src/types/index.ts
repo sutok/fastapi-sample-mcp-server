@@ -14,10 +14,11 @@ export interface Branch {
   id: string;
   branch_name: string;
   address: string;
-  phone_number: string;
+  phone: string;
   email: string;
+  notes: string;
   website: string;
-  description?: string;
+  business_hours: string;
   created_at: string;
   updated_at: string;
 }

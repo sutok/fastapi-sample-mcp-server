@@ -1,54 +1,34 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { config } from "../core/config";
 import { Branch } from "../types";
-import { auth } from "../firebase";
-import { User, onAuthStateChanged } from "firebase/auth";
 import { useAuth } from "./useAuth";
 
 /**
- * 企業一覧を管理するカスタムフック
+ * 店舗一覧を管理するカスタムフック（react-query版）
  */
 export const useBranches = (company_id?: string) => {
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { user, loading: authLoading } = useAuth();
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user) return;
-    if (!company_id) return;
-
-    const fetchBranches = async () => {
-      setLoading(true);
-      try {
-        const idToken = await user.getIdToken();
-        // 店舗一覧取得
-        const response = await fetch(
-          `${config.api.baseUrl}/branches/?company_id=${company_id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${idToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        if (!response.ok) {
-          throw new Error(
-            `企業データの取得に失敗しました (${response.status})`
-          );
+  return useQuery<Branch[], Error>({
+    queryKey: ["branches", company_id],
+    queryFn: async () => {
+      if (authLoading || !user || !company_id) return [];
+      const idToken = await user.getIdToken();
+      const response = await fetch(
+        `${config.api.baseUrl}/branches/?company_id=${company_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
         }
-        const data = await response.json();
-        setBranches(data);
-        setError(null);
-      } catch (err: any) {
-        setError("企業データの取得に失敗しました");
-      } finally {
-        setLoading(false);
+      );
+      if (!response.ok) {
+        throw new Error(`店舗データの取得に失敗しました (${response.status})`);
       }
-    };
-    fetchBranches();
-  }, [user, authLoading, company_id]);
-
-  return { branches, loading, error };
+      return await response.json();
+    },
+    enabled: !authLoading && !!user && !!company_id,
+    staleTime: 1000 * 60 * 10, // 10分キャッシュ
+  });
 };
