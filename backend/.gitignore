@@ -282,4 +282,7 @@ pyrightconfig.json
 .history
 .ionide
 
+!emulator-data/.gitkeep
+emulator-data/*
+
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode
