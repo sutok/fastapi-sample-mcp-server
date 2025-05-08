@@ -43,7 +43,6 @@ async def signup(user_create: UserCreate) -> Any:
         response_data = response.json()
 
         if response.status_code != 200:
-            print(response_data)
             error_message = response_data.get("error", {}).get(
                 "message", "不明なエラー"
             )
@@ -62,12 +61,30 @@ async def signup(user_create: UserCreate) -> Any:
                     existing_user = await crud_user.get_by_uid(user_record.uid)
 
                     if not existing_user:
-                        # Firestoreにデータがない場合、Auth側のユーザーを削除
-                        auth.delete_user(user_record.uid)
-                        # 再帰的に同じエンドポイントを呼び出し
-                        return await signup(user_create)
+                        try:
+                            # Firestoreにデータがない場合、Auth側のユーザーを削除
+                            auth.delete_user(user_record.uid)
+                            # 再帰的に同じエンドポイントを呼び出し
+                            return await signup(user_create)
+                        except Exception as delete_error:
+                            logger.error(
+                                f"Error deleting existing user: {str(delete_error)}"
+                            )
+                            raise HTTPException(
+                                status_code=400,
+                                detail="既存ユーザーの削除に失敗しました",
+                            )
+                    else:
+                        raise HTTPException(
+                            status_code=400,
+                            detail="このメールアドレスは既に登録されています",
+                        )
                 except Exception as e:
                     logger.error(f"Error handling EMAIL_EXISTS: {str(e)}")
+                    raise HTTPException(
+                        status_code=400,
+                        detail="ユーザー登録処理中にエラーが発生しました",
+                    )
 
             raise HTTPException(
                 status_code=400, detail=f"ユーザー登録に失敗しました: {error_message}"
@@ -76,13 +93,29 @@ async def signup(user_create: UserCreate) -> Any:
         # Firestoreにユーザー情報を保存
         user = await crud_user.create(user_create, response_data["localId"])
 
-        # ユーザー作成後、カスタムクレームを設定
-        custom_claims = {
-            "role": "user",  # デフォルトロール
-            "company_id": user.company_id,  # ユーザーモデルから取得
-            "branch_id": user.branch_id,  # ユーザーモデルから取得
-        }
-        await SecurityService.set_custom_claims(response_data["localId"], custom_claims)
+        try:
+            # ユーザー作成後、カスタムクレームを設定
+            custom_claims = {
+                "role": "user",  # デフォルトロール
+            }
+            # company_idとbranch_idが存在する場合のみ追加
+            if user.company_id:
+                custom_claims["company_id"] = user.company_id
+            if user.branch_id:
+                custom_claims["branch_id"] = user.branch_id
+
+            await SecurityService.set_custom_claims(
+                response_data["localId"], custom_claims
+            )
+        except Exception as claims_error:
+            # カスタムクレームの設定に失敗しても、ユーザー作成は成功しているので
+            # エラーをログに記録するだけで、ユーザーは返す
+            logger.error(f"Error setting custom claims: {str(claims_error)}")
+            # 開発環境ではカスタムクレームの設定はスキップされるため、
+            # エラーを無視してユーザー情報を返す
+            if settings.ENVIRONMENT == "development":
+                return user
+            raise
 
         return user
 
