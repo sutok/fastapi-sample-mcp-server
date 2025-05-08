@@ -7,6 +7,14 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "user@example.com",
+                "password": "strongpassword123",
+            }
+        }
+
 
 class TokenResponse(BaseModel):
     """トークンレスポンスのモデル"""
