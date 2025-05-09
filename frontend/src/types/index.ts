@@ -22,3 +22,13 @@ export interface Branch {
   created_at: string;
   updated_at: string;
 }
+
+export interface Reservation {
+  id: string;
+  company_id: string;
+  branch_id: string;
+  reservation_at: string;
+  reception_number: string;
+  created_at: string;
+  updated_at: string;
+}

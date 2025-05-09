@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 class ReservationStatus(str, Enum):
     """予約ステータス"""
 
+    ACCEPTED = "accepted"
     CONFIRMED = "confirmed"
     CANCELLED = "cancelled"
     COMPLETED = "completed"
@@ -21,6 +22,7 @@ class ReservationBase(BaseModel):
     reservation_at: datetime = Field(..., description="予約日時（Timestamp型）")
     reception_number: int = Field(..., description="受付番号")
     notes: Optional[str] = Field(None, description="備考")
+    status: ReservationStatus = Field(default=ReservationStatus.ACCEPTED)
 
 
 class ReservationCreate(ReservationBase):

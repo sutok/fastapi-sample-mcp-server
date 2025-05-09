@@ -8,6 +8,7 @@ from typing_extensions import Annotated
 class ReservationStatus(str, Enum):
     """予約ステータス"""
 
+    ACCEPTED = "accepted"
     CONFIRMED = "confirmed"
     CANCELLED = "cancelled"
     COMPLETED = "completed"
@@ -90,3 +91,24 @@ class TimeSlot(BaseModel):
     remaining_capacity: int = Field(..., ge=0, description="残り定員")
 
     model_config = {"from_attributes": True}
+
+
+class BusinessHours(BaseModel):
+    """営業時間モデル"""
+
+    morning_start: str = "10:00"
+    morning_end: str = "13:00"
+    afternoon_start: str = "14:00"
+    afternoon_end: str = "17:00"
+
+
+class ReservationSummary(BaseModel):
+    """予約状況サマリーモデル"""
+
+    current_time: datetime
+    business_hours: BusinessHours
+    current_number: Optional[int] = None  # 現在の呼び出し番号
+    latest_reception_number: Optional[int] = None  # 最新の受付番号
+    waiting_count: int = 0  # 待機人数
+
+    model_config = {"json_encoders": {datetime: lambda v: v.isoformat()}}

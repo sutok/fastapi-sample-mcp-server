@@ -1,5 +1,5 @@
 from typing import List, Optional
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, time
 from firebase_admin import firestore
 from ..models.reservation import ReservationCreate, ReservationUpdate, ReservationStatus
 from ..core.firebase import get_firestore
@@ -155,6 +155,7 @@ class CRUDReservation:
         limit: int = 10,
         date_from: Optional[date] = None,
         date_to: Optional[date] = None,
+        status: Optional[str] = None,
     ) -> List[dict]:
         """
         ユーザーの予約一覧を取得
@@ -165,6 +166,7 @@ class CRUDReservation:
             limit (int): 取得する件数
             date_from (date, optional): 検索開始日
             date_to (date, optional): 検索終了日
+            status (str, optional): 予約ステータス
 
         Returns:
             List[dict]: 予約一覧
@@ -190,9 +192,11 @@ class CRUDReservation:
                 "<",
                 (date_to + timedelta(days=1)).strftime("%Y-%m-%d"),
             )
+        if status:
+            query = query.where("status", "==", status)
 
         # 日付でソート
-        query = query.order_by("reservation_at")
+        query = query.order_by("reservation_at", direction=firestore.Query.DESCENDING)
 
         docs = query.limit(limit).offset(skip).get()
         reservations = []
@@ -332,6 +336,59 @@ class CRUDReservation:
         ]
 
         return available_slots
+
+    async def get_daily_summary(
+        self, company_id: str, branch_id: str, date: date
+    ) -> dict:
+        """
+        指定日の予約状況サマリーを取得
+
+        Args:
+            company_id (str): 企業ID
+            branch_id (str): 店舗ID
+            date (date): 対象日
+
+        Returns:
+            dict: 予約状況サマリー
+        """
+        # 当日の予約を取得
+        query = (
+            self.collection.where("company_id", "==", company_id)
+            .where("branch_id", "==", branch_id)
+            .where("reservation_at", ">=", datetime.combine(date, time.min))
+            .where("reservation_at", "<=", datetime.combine(date, time.max))
+        )
+
+        docs = query.stream()
+
+        # 待機中の予約をカウント
+        waiting_count = 0
+        latest_reception_number = 0
+        current_number = None
+
+        for doc in docs:
+            data = doc.to_dict()
+            if data.get("status") == "accepted":
+                waiting_count += 1
+                reception_number = data.get("reception_number", 0)
+                latest_reception_number = max(latest_reception_number, reception_number)
+
+                # 現在の呼び出し番号を取得（statusがconfirmedの最新の予約）
+                if data.get("status") == "confirmed":
+                    current_number = reception_number
+
+        return {
+            "current_time": datetime.now(),
+            "business_hours": {
+                "morning_start": "10:00",
+                "morning_end": "13:00",
+                "afternoon_start": "14:00",
+                "afternoon_end": "17:00",
+            },
+            "current_number": current_number,
+            "latest_reception_number": latest_reception_number,
+            "waiting_count": waiting_count,
+        }
 
 
 # CRUDReservationのインスタンスを作成
