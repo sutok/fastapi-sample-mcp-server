@@ -52,7 +52,7 @@ const Branches: React.FC = () => {
         /> */}
         <ul>
           {branches && branches.length > 0 ? (
-            branches.map((branch) => (
+            branches.map((branch: any) => (
               <li key={branch.id}>
                 <BranchCard key={branch.id} branch={branch} />
               </li>

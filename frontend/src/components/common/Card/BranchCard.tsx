@@ -13,15 +13,6 @@ type BranchCardProps = {
   branch: Branch;
 };
 
-const bull = (
-  <Box
-    component="span"
-    sx={{ display: "inline-block", mx: "2px", transform: "scale(0.8)" }}
-  >
-    •
-  </Box>
-);
-
 const BranchCard: React.FC<BranchCardProps> = ({ branch }) => {
   const navigate = useNavigate();
   // パラメータ取得
