@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { auth } from "../firebase";
 import axios from "axios";
 import { config } from "../core/config";
-
+import { useNavigate } from "react-router-dom";
 interface BusinessHours {
   morning_start: string;
   morning_end: string;
@@ -25,6 +25,7 @@ export const useWaitingStatus = (
   const [status, setStatus] = useState<WaitingStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate(); // useNavigateフックを使用
 
   const fetchStatus = async () => {
     // companyIdまたはbranchIdが未定義の場合は何もしない
