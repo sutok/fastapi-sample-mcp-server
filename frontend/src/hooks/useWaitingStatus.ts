@@ -40,7 +40,10 @@ export const useWaitingStatus = (
       // 現在のユーザーのIDトークンを取得
       const user = auth.currentUser;
       if (!user) {
-        throw new Error("ユーザーが認証されていません");
+        // 認証情報が無ければログアウト画面にリダイレクト
+        navigate("/logout");
+        return;
+        // throw new Error("ユーザーが認証されていません");
       }
       const token = await user.getIdToken();
 
