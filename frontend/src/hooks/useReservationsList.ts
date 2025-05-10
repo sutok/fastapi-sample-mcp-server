@@ -24,12 +24,12 @@ export const useReservationsList = (
   const paramsString = searchParams.toString();
 
   return useQuery({
-    queryKey: ["reservations"],
+    queryKey: ["reservations", company_id, branch_id],
     queryFn: async () => {
       const currentUser = auth.currentUser;
       if (!currentUser) return [];
       const idToken = await currentUser.getIdToken();
-      console.log("idToken", idToken);
+      // console.log("idToken", idToken);
 
       const response = await fetch(
         `${config.api.baseUrl}/reservations?${paramsString}`,

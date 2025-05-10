@@ -16,10 +16,10 @@ interface Reservation {
 
 /**
  * 予約情報を管理するカスタムフック
- * @param storeId 店舗ID
+ * @param branchId 店舗ID
  * @returns {Object} 予約情報、読み込み状態、予約作成関数、予約情報更新関数
  */
-export const useReservation = (storeId: string | null) => {
+export const useReservation = (branchId: string | null) => {
   const [reservation, setReservation] = useState<Reservation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +29,7 @@ export const useReservation = (storeId: string | null) => {
    */
   const fetchReservation = async () => {
     const currentUser = auth.currentUser;
-    if (!currentUser || !storeId) {
+    if (!currentUser || !branchId) {
       setLoading(false);
       return;
     }
@@ -38,7 +38,7 @@ export const useReservation = (storeId: string | null) => {
       const idToken = await currentUser.getIdToken();
       // 指定された店舗の現在の予約を取得
       const response = await fetch(
-        `${config.api.baseUrl}/reservations/current?branch_id=${storeId}`,
+        `${config.api.baseUrl}/reservations/current?branch_id=${branchId}`,
         {
           headers: {
             Authorization: `Bearer ${idToken}`,
@@ -67,8 +67,9 @@ export const useReservation = (storeId: string | null) => {
    * @returns {Promise<Reservation>} 作成された予約情報
    */
   const createReservation = async () => {
+    console.log("createReservation");
     const currentUser = auth.currentUser;
-    if (!currentUser || !storeId) return;
+    if (!currentUser || !branchId) return;
 
     try {
       const idToken = await currentUser.getIdToken();
@@ -80,7 +81,7 @@ export const useReservation = (storeId: string | null) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          branch_id: storeId,
+          branch_id: branchId,
         }),
       });
 
@@ -102,7 +103,7 @@ export const useReservation = (storeId: string | null) => {
   // 店舗IDが変更されたら予約情報を再取得
   useEffect(() => {
     fetchReservation();
-  }, [storeId]);
+  }, [branchId]);
 
   return {
     reservation,
