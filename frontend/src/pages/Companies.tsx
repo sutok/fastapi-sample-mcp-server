@@ -95,68 +95,66 @@ const Companies: React.FC = () => {
   // 企業一覧の表示
   return (
     <DefaultLayout>
-      <Box sx={{ maxWidth: 900, mx: "auto", mt: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          企業一覧
-        </Typography>
-        {/* 検索ボックス */}
-        <Box sx={{ mb: 2 }}>
-          <input
-            type="text"
-            placeholder="フリーワード検索"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ width: "100%", padding: 8, fontSize: 16 }}
-          />
-        </Box>
-        {/* エラー表示 */}
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-        {/* 企業が0件の場合の表示 */}
-        {filteredCompanies.length === 0 ? (
-          <Paper sx={{ p: 3, textAlign: "center" }}>
-            <Typography>企業が登録されていません</Typography>
-          </Paper>
-        ) : (
-          // 企業一覧テーブル
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>企業名</TableCell>
-                  <TableCell>住所</TableCell>
-                  <TableCell>TEL</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredCompanies.map((company) => (
-                  <TableRow key={company.id} hover>
-                    <TableCell>
-                      <span
-                        style={{
-                          color: "#1976d2",
-                          cursor: "pointer",
-                          textDecoration: "underline",
-                        }}
-                        onClick={() =>
-                          navigate(`/company/${company.id}/branches`)
-                        }
-                      >
-                        {company.company_name}
-                      </span>
-                    </TableCell>
-                    <TableCell>{company.address || "説明なし"}</TableCell>
-                    <TableCell>{company.phone_number || ""}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
+      <Typography variant="h4" gutterBottom sx={{ mt: -4 }}>
+        企業一覧
+      </Typography>
+      {/* 検索ボックス */}
+      <Box sx={{ mb: 2 }}>
+        <input
+          type="text"
+          placeholder="フリーワード検索"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ width: "100%", padding: 8, fontSize: 16 }}
+        />
       </Box>
+      {/* エラー表示 */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      {/* 企業が0件の場合の表示 */}
+      {filteredCompanies.length === 0 ? (
+        <Paper sx={{ p: 3, textAlign: "center" }}>
+          <Typography>企業が登録されていません</Typography>
+        </Paper>
+      ) : (
+        // 企業一覧テーブル
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>企業名</TableCell>
+                <TableCell>住所</TableCell>
+                <TableCell>TEL</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredCompanies.map((company) => (
+                <TableRow key={company.id} hover>
+                  <TableCell>
+                    <span
+                      style={{
+                        color: "#1976d2",
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                      }}
+                      onClick={() =>
+                        navigate(`/company/${company.id}/branches`)
+                      }
+                    >
+                      {company.company_name}
+                    </span>
+                  </TableCell>
+                  <TableCell>{company.address || "説明なし"}</TableCell>
+                  <TableCell>{company.phone_number || ""}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </DefaultLayout>
   );
 };

@@ -32,3 +32,15 @@ export interface Reservation {
   created_at: string;
   updated_at: string;
 }
+
+export interface UserInfo {
+  id: string;
+  company_id: string;
+  branch_id: string;
+  username: string;
+  email: string;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}

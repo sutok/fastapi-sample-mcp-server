@@ -1,11 +1,11 @@
 import React from "react";
+import { Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { useUserInfo } from "../hooks/useUserInfo";
 import DefaultLayout from "../components/layouts/DefaultLayout";
 import { useAuth } from "../hooks/useAuth";
 // import { useReservations } from "../hooks/useReservations";
 import ReservationCard from "../components/common/Card/ReservationWaitingStatusCard";
-
 import { useReservationsList } from "../hooks/useReservationsList";
 import { useBranches } from "../hooks/useBranches";
 import ReservationWaitingStatusCard from "../components/common/Card/ReservationWaitingStatusCard";
@@ -51,20 +51,23 @@ const Reservations: React.FC = () => {
   // debug--------------------------------
   return (
     <DefaultLayout>
-      <div style={{ maxWidth: 900, margin: "40px auto" }}>
-        {/* // 予約状況-------------------------------- */}
-        {company_id && branch_id && (
-          <ReservationWaitingStatusCard
-            companyId={company_id}
-            branchId={branch_id}
-          />
-        )}
-        {/* // 予約状況-------------------------------- */}
-        {/* // debug-------------------------------- */}
-        <p>company_id: {company_id}</p>
-        <p>branch_id: {branch_id}</p>
-        {/* // debug-------------------------------- */}
-      </div>
+      <Typography variant="h4" gutterBottom sx={{ mt: -4 }}>
+        <div style={{ maxWidth: 900, margin: "40px auto" }}>
+          {/* // 予約状況-------------------------------- */}
+          {company_id && branch_id && (
+            <ReservationWaitingStatusCard
+              companyId={company_id}
+              branchId={branch_id}
+            />
+          )}
+          {/* // 予約状況-------------------------------- */}
+          {/* // debug-------------------------------- */}
+          <p>company_id: {company_id}</p>
+          <p>branch_id: {branch_id}</p>
+          {/* <p>target_date: {target_date}</p> */}
+          {/* // debug-------------------------------- */}
+        </div>
+      </Typography>
     </DefaultLayout>
   );
 };

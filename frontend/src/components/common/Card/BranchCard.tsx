@@ -6,17 +6,20 @@ import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import { Branch } from "../../../types"; // 型定義ファイルのパスに合わせて修正
+import { Branch, UserInfo } from "../../../types";
 import { useNavigate, useParams } from "react-router-dom";
 
 type BranchCardProps = {
   branch: Branch;
+  userInfo?: UserInfo;
 };
 
-const BranchCard: React.FC<BranchCardProps> = ({ branch }) => {
+const BranchCard: React.FC<BranchCardProps> = ({ branch, userInfo }) => {
   const navigate = useNavigate();
   // パラメータ取得
   const { company_id } = useParams<{ company_id: string }>();
+
+  console.log("userInfo", userInfo);
 
   return (
     <Box sx={{ minWidth: 275 }}>
@@ -52,9 +55,11 @@ const BranchCard: React.FC<BranchCardProps> = ({ branch }) => {
               </Typography>
             </CardContent>
           </CardActionArea>
-          <CardActions>
-            <Button size="small">店舗詳細</Button>
-          </CardActions>
+          {userInfo?.role === "admin" && (
+            <CardActions>
+              <Button size="small">店舗詳細</Button>
+            </CardActions>
+          )}
         </React.Fragment>
       </Card>
     </Box>

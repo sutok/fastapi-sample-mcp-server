@@ -1,28 +1,28 @@
 import React from "react";
-import { Typography, Box, CircularProgress } from "@mui/material";
+import { Typography, Box, CircularProgress, List } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import DefaultLayout from "../components/layouts/DefaultLayout";
-// 店舗一覧取得用のカスタムフック（仮定）
 import { useBranches } from "../hooks/useBranches";
+import { useUserInfo } from "../hooks/useUserInfo";
 import BranchCard from "../components/common/Card/BranchCard";
-// import { Branch } from "../types";
+import { UserInfo } from "../types"; // UserInfo型をインポート
 
 const Branches: React.FC = () => {
   const navigate = useNavigate();
-  // URLパラメータからcompany_idを取得
   const { company_id } = useParams<{ company_id: string }>();
-  // Branches一覧をキャッシュから取得
-  const { data: branches, isLoading, error } = useBranches(company_id);
-  if (isLoading) return <div>読み込み中...</div>;
-  if (error) return <div>エラー: {error.message}</div>;
-  // 入力値でフィルタ
-  // const filteredBranches = branches
-  //   ? branches.filter((branch) =>
-  //       branch.id.toLowerCase().includes(search.toLowerCase())
-  //     )
-  //   : [];
+  const {
+    data: branches,
+    isLoading: branchesLoading,
+    error: branchesError,
+  } = useBranches(company_id);
+  const {
+    data: userInfo,
+    isLoading: userInfoLoading,
+    error: userInfoError,
+  } = useUserInfo();
 
-  if (isLoading) {
+  // ローディング状態のチェック
+  if (branchesLoading || userInfoLoading) {
     return (
       <Box
         display="flex"
@@ -31,36 +31,42 @@ const Branches: React.FC = () => {
         minHeight="50vh"
       >
         <CircularProgress />
-        <Typography sx={{ ml: 2 }}>店舗データを読み込み中...</Typography>
+        <Typography sx={{ ml: 2 }}>データを読み込み中...</Typography>
       </Box>
     );
   }
-  console.log(branches);
+
+  // エラー状態のチェック
+  if (branchesError) {
+    return (
+      <Typography color="error">店舗データの取得に失敗しました</Typography>
+    );
+  }
+  if (userInfoError) {
+    return (
+      <Typography color="error">ユーザー情報の取得に失敗しました</Typography>
+    );
+  }
 
   return (
     <DefaultLayout>
       <Box sx={{ maxWidth: 900, mx: "auto", mt: 4 }}>
-        <Typography variant="h4" gutterBottom>
+        <Typography variant="h4" gutterBottom sx={{ mt: -4 }}>
           店舗一覧
         </Typography>
-        {/* <input
-          type="text"
-          placeholder="店舗名で検索"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{ marginBottom: "1em" }}
-        /> */}
-        <ul>
+        <List>
           {branches && branches.length > 0 ? (
             branches.map((branch: any) => (
-              <li key={branch.id}>
-                <BranchCard key={branch.id} branch={branch} />
-              </li>
+              <BranchCard
+                key={branch.id}
+                branch={branch}
+                userInfo={userInfo as UserInfo} // 型アサーションを追加
+              />
             ))
           ) : (
-            <li>店舗がありません</li>
+            <Typography>店舗がありません</Typography>
           )}
-        </ul>
+        </List>
       </Box>
     </DefaultLayout>
   );
