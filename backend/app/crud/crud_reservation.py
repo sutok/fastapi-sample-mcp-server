@@ -153,8 +153,7 @@ class CRUDReservation:
         branch_id: Optional[str] = None,
         skip: int = 0,
         limit: int = 10,
-        date_from: Optional[date] = None,
-        date_to: Optional[date] = None,
+        target_date: Optional[date] = None,
         status: Optional[str] = None,
     ) -> List[dict]:
         """
@@ -164,8 +163,7 @@ class CRUDReservation:
             user_id (str): ユーザーID
             skip (int): スキップする件数
             limit (int): 取得する件数
-            date_from (date, optional): 検索開始日
-            date_to (date, optional): 検索終了日
+            target_date (date, optional): 検索日
             status (str, optional): 予約ステータス
 
         Returns:
@@ -182,16 +180,12 @@ class CRUDReservation:
         if branch_id:
             query = query.where("branch_id", "==", branch_id)
 
-        if date_from:
-            query = query.where(
-                "reservation_date", ">=", date_from.strftime("%Y-%m-%d")
-            )
-        if date_to:
-            query = query.where(
-                "reservation_date",
-                "<",
-                (date_to + timedelta(days=1)).strftime("%Y-%m-%d"),
-            )
+        if target_date:
+            from_datetime = datetime.combine(target_date, time.min)
+            to_datetime = datetime.combine(target_date, time.max)
+            query = query.where("reservation_at", ">=", from_datetime)
+            query = query.where("reservation_at", "<=", to_datetime)
+
         if status:
             query = query.where("status", "==", status)
 

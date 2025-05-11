@@ -43,8 +43,7 @@ async def read_reservations(
     branch_id: Optional[str] = Query(None),
     skip: int = 0,
     limit: int = 10,
-    date_from: Optional[date] = None,
-    date_to: Optional[date] = None,
+    target_date: Optional[str] = None,
     status: Optional[str] = None,
 ):
     """
@@ -62,6 +61,10 @@ async def read_reservations(
     Returns:
         List[Reservation]: 予約一覧
     """
+    if target_date:
+        target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
+        print("target_date", target_date)
+
     print(current_user)
     return await crud_reservation.get_multi_by_user(
         user_id=current_user["uid"],
@@ -69,8 +72,7 @@ async def read_reservations(
         branch_id=branch_id,
         skip=skip,
         limit=limit,
-        date_from=date_from,
-        date_to=date_to,
+        target_date=target_date,
         status=status,
     )
 
