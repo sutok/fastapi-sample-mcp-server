@@ -72,7 +72,7 @@ class CRUDReservation:
             "branch_id": reservation.branch_id,
             "reservation_at": reservation.reservation_at,
             "notes": reservation.notes,
-            "status": ReservationStatus.CONFIRMED.value,
+            "status": ReservationStatus.ACCEPTED.value,
             "reception_number": reception_number,
             "created_at": current_time,
             "updated_at": current_time,
