@@ -8,6 +8,7 @@ class ReservationStatus(str, Enum):
     """予約ステータス"""
 
     ACCEPTED = "accepted"
+    CALLING = "calling"
     CONFIRMED = "confirmed"
     CANCELLED = "cancelled"
     COMPLETED = "completed"
