@@ -186,9 +186,6 @@ class CRUDReservation:
             query = query.where("reservation_at", ">=", from_datetime)
             query = query.where("reservation_at", "<=", to_datetime)
 
-        if status:
-            query = query.where("status", "==", status)
-
         # 日付でソート
         query = query.order_by("reservation_at", direction=firestore.Query.DESCENDING)
 
@@ -200,6 +197,13 @@ class CRUDReservation:
             # datetimeからdateに変換
             if "reservation_date" in data:
                 data["reservation_date"] = data["reservation_date"].date()
+            # ステータスが指定されている場合は、ステータスでフィルタリング
+            if "status" in data and status:
+                if data["status"] in status.split(","):
+                    reservations.append(data)
+                else:
+                    continue
+
             reservations.append(data)
         return reservations
 
