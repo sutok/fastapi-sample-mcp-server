@@ -49,6 +49,7 @@ const Reservations: React.FC = () => {
   console.log("branch", branch);
   console.log("reservations", reservations);
   // debug--------------------------------
+
   return (
     <DefaultLayout>
       <Typography variant="h4" gutterBottom sx={{ mt: -4 }}>
@@ -58,6 +59,7 @@ const Reservations: React.FC = () => {
             <ReservationWaitingStatusCard
               companyId={company_id}
               branchId={branch_id}
+              reservation={reservations?.[0]}
             />
           )}
           {/* // 予約状況-------------------------------- */}

@@ -28,6 +28,7 @@ export const useReservationsList = (
       }
       const today = new Date().toISOString().split("T")[0];
       searchParams.append("target_date", today);
+      searchParams.append("status", "accepted");
       const paramsString = searchParams.toString();
 
       const idToken = await currentUser.getIdToken();

@@ -11,13 +11,14 @@ import { useWaitingStatus } from "../../../hooks/useWaitingStatus";
 interface ReservationWaitingStatusCardProps {
   companyId: string;
   branchId: string;
+  reservation: any;
 }
 
 export const ReservationWaitingStatusCard: React.FC<
   ReservationWaitingStatusCardProps
-> = ({ companyId, branchId }) => {
+> = ({ companyId, branchId, reservation }) => {
   const { status, isLoading, error } = useWaitingStatus(companyId, branchId);
-
+  console.log("reservation", reservation);
   if (isLoading) {
     return (
       <Card sx={{ minWidth: 275, m: 2 }}>
@@ -78,11 +79,11 @@ export const ReservationWaitingStatusCard: React.FC<
           </Box>
           <Box>
             <Typography variant="subtitle1" color="text.secondary">
-              最新の受付番号
+              最終受付番号
             </Typography>
             <Typography variant="h4">
-              {status.latest_reception_number
-                ? `No.${status.latest_reception_number}`
+              {reservation?.reception_number
+                ? `No.${reservation.reception_number}`
                 : "---"}
             </Typography>
           </Box>
