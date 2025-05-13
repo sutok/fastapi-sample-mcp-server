@@ -63,21 +63,6 @@ class CRUDReservation:
         """
         current_time = datetime.utcnow()
 
-        # 受付番号を生成。順番のみなので時刻は現在時刻
-        reception_number = await self._generate_reception_number(current_time)
-
-        reservation_data = {
-            "user_id": user_id,
-            "company_id": reservation.company_id,
-            "branch_id": reservation.branch_id,
-            "reservation_at": reservation.reservation_at,
-            "notes": reservation.notes,
-            "status": ReservationStatus.ACCEPTED.value,
-            "reception_number": reception_number,
-            "created_at": current_time,
-            "updated_at": current_time,
-        }
-
         # トランザクションを使用して、受付番号の重複を防ぐ
         transaction = self.db.transaction()
 
@@ -89,16 +74,21 @@ class CRUDReservation:
             )
             end_of_day = start_of_day + timedelta(days=1)
 
+            # 当日の予約を取得
             existing_query = (
                 self.collection.where("reservation_at", ">=", start_of_day)
                 .where("reservation_at", "<", end_of_day)
+                .order_by("reception_number", direction=firestore.Query.DESCENDING)
+                .limit(1)
                 .get()
             )
-            # 受付番号初期化
-            new_number = 0
+
+            # 受付番号を生成
+            new_number = 1  # デフォルト値を1に設定
             if len(existing_query) > 0:
-                # 重複が見つかった場合は、再度受付番号を生成
-                new_number = len(existing_query) + 1
+                # 既存の予約がある場合は、最大の受付番号に1を加える
+                new_number = existing_query[0].to_dict().get("reception_number", 0) + 1
+
             reservation_data["reception_number"] = new_number
 
             # ドキュメントを作成
@@ -107,6 +97,17 @@ class CRUDReservation:
             return doc_ref, reservation_data
 
         try:
+            reservation_data = {
+                "user_id": user_id,
+                "company_id": reservation.company_id,
+                "branch_id": reservation.branch_id,
+                "reservation_at": reservation.reservation_at,
+                "notes": reservation.notes,
+                "status": ReservationStatus.ACCEPTED.value,
+                "created_at": current_time,
+                "updated_at": current_time,
+            }
+
             doc_ref, final_data = create_in_transaction(transaction, reservation_data)
 
             # 予約作成のログを出力
@@ -161,6 +162,8 @@ class CRUDReservation:
 
         Args:
             user_id (str): ユーザーID
+            company_id (str): 企業ID
+            branch_id (str): 店舗ID
             skip (int): スキップする件数
             limit (int): 取得する件数
             target_date (date, optional): 検索日

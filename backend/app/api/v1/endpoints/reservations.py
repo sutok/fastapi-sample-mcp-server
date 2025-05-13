@@ -55,17 +55,17 @@ async def read_reservations(
         branch_id: branch_id
         skip (int): スキップする件数
         limit (int): 取得する件数
-        date_from (date, optional): 検索開始日
-        date_to (date, optional): 検索終了日
+        target_date (date, optional): 検索日
+        status (str, optional): 予約ステータス
 
     Returns:
         List[Reservation]: 予約一覧
     """
     if target_date:
         target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
-        print("target_date", target_date)
+    else:
+        target_date = datetime.now().date()
 
-    print(current_user)
     return await crud_reservation.get_multi_by_user(
         user_id=current_user["uid"],
         company_id=company_id,
