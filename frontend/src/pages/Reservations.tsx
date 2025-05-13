@@ -9,6 +9,7 @@ import ReservationCard from "../components/common/Card/ReservationWaitingStatusC
 import { useReservationsList } from "../hooks/useReservationsList";
 import { useBranches } from "../hooks/useBranches";
 import ReservationWaitingStatusCard from "../components/common/Card/ReservationWaitingStatusCard";
+import { Reservation } from "../types";
 
 const Reservations: React.FC = () => {
   // URLパラメータからcompany_idとbranch_idを取得
@@ -30,7 +31,7 @@ const Reservations: React.FC = () => {
   } = useBranches(company_id);
   // 予約一覧を取得
   const {
-    data: reservations,
+    data: reservations = [] as Reservation[], // 型アサーションを追加
     isLoading: reservationsLoading,
     error: reservationsError,
   } = useReservationsList(company_id, branch_id);
@@ -44,10 +45,12 @@ const Reservations: React.FC = () => {
   if (branchError) return <div>店舗情報取得エラー: {branchError.message}</div>;
   // debug--------------------------------
   const branch = branches?.find((branch) => branch.id === branch_id);
+  // const userId = userInfo?.id;
   // console.log("branches", branches);
   // debug--------------------------------
-  console.log("branch", branch);
-  console.log("reservations", reservations);
+  // console.log("branch", branch);
+  // console.log("reservations", reservations);
+  // console.log("userInfo", userInfo?.id);
   // debug--------------------------------
 
   return (
@@ -59,7 +62,8 @@ const Reservations: React.FC = () => {
             <ReservationWaitingStatusCard
               companyId={company_id}
               branchId={branch_id}
-              reservation={reservations?.[0]}
+              reservations={reservations}
+              userInfo={userInfo}
             />
           )}
           {/* // 予約状況-------------------------------- */}

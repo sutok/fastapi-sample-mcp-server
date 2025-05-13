@@ -19,8 +19,6 @@ const BranchCard: React.FC<BranchCardProps> = ({ branch, userInfo }) => {
   // パラメータ取得
   const { company_id } = useParams<{ company_id: string }>();
 
-  console.log("userInfo", userInfo);
-
   return (
     <Box sx={{ minWidth: 275 }}>
       <Card variant="outlined">

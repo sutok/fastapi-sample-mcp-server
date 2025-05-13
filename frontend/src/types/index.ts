@@ -25,10 +25,13 @@ export interface Branch {
 
 export interface Reservation {
   id: string;
+  user_id: string;
   company_id: string;
   branch_id: string;
   reservation_at: string;
-  reception_number: string;
+  notes?: string;
+  status: string;
+  reception_number: number;
   created_at: string;
   updated_at: string;
 }

@@ -7,18 +7,33 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useWaitingStatus } from "../../../hooks/useWaitingStatus";
+import { Reservation, UserInfo } from "../../../types";
 
 interface ReservationWaitingStatusCardProps {
   companyId: string;
   branchId: string;
-  reservation: any;
+  reservations: Reservation[];
+  userInfo: UserInfo;
 }
 
 export const ReservationWaitingStatusCard: React.FC<
   ReservationWaitingStatusCardProps
-> = ({ companyId, branchId, reservation }) => {
+> = ({ companyId, branchId, reservations, userInfo }) => {
   const { status, isLoading, error } = useWaitingStatus(companyId, branchId);
-  console.log("reservation", reservation);
+
+  // 予約の中で最も大きい受付番号を取得
+  const latestReservation = reservations?.[0];
+
+  // 予約の中で最も小さい受付番号を取得
+  const callingReservation = reservations
+    .filter((reservation) => reservation.status === "calling")
+    .sort((a, b) => b.reception_number - a.reception_number)[0];
+
+  // ユーザーの予約を取得
+  const userReservation = reservations.find(
+    (reservation) => reservation.user_id === userInfo.id
+  );
+
   if (isLoading) {
     return (
       <Card sx={{ minWidth: 275, m: 2 }}>
@@ -68,34 +83,63 @@ export const ReservationWaitingStatusCard: React.FC<
           </Typography>
         </Box>
 
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-          <Box>
-            <Typography variant="subtitle1" color="text.secondary">
-              現在の呼び出し番号
-            </Typography>
-            <Typography variant="h4">
-              {status.current_number ? `No.${status.current_number}` : "---"}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="subtitle1" color="text.secondary">
-              最終受付番号
-            </Typography>
-            <Typography variant="h4">
-              {reservation?.reception_number
-                ? `No.${reservation.reception_number}`
-                : "---"}
-            </Typography>
-          </Box>
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+          <Card sx={{ flex: 1, mr: 2 }}>
+            <CardContent>
+              <Typography variant="subtitle1" color="text.secondary">
+                待機人数
+              </Typography>
+              <Typography variant="h4" color="primary">
+                {status.waiting_count}名
+              </Typography>
+            </CardContent>
+          </Card>
+          <Card sx={{ flex: 1, mr: 2 }}>
+            <CardContent>
+              <Typography variant="subtitle1" color="text.secondary">
+                あなたの番号
+              </Typography>
+              <Typography variant="h4">
+                {userReservation?.reception_number
+                  ? `No.${userReservation.reception_number}`
+                  : "---"}
+              </Typography>
+            </CardContent>
+          </Card>
         </Box>
+        <br />
 
-        <Box>
-          <Typography variant="subtitle1" color="text.secondary">
-            待機人数
-          </Typography>
-          <Typography variant="h4" color="primary">
-            {status.waiting_count}名
-          </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            mb: 2,
+          }}
+        >
+          <Card sx={{ flex: 1, mr: 2 }}>
+            <CardContent>
+              <Typography variant="subtitle1" color="text.secondary">
+                呼出中番号
+              </Typography>
+              <Typography variant="h4">
+                {callingReservation?.reception_number
+                  ? `No.${callingReservation.reception_number}`
+                  : "---"}
+              </Typography>
+            </CardContent>
+          </Card>
+          <Card sx={{ flex: 1, mr: 2 }}>
+            <CardContent>
+              <Typography variant="subtitle1" color="text.secondary">
+                最終受付番号
+              </Typography>
+              <Typography variant="h4">
+                {latestReservation?.reception_number
+                  ? `No.${latestReservation.reception_number}`
+                  : "---"}
+              </Typography>
+            </CardContent>
+          </Card>
         </Box>
       </CardContent>
     </Card>

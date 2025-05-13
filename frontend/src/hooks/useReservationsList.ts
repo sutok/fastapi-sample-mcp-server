@@ -1,7 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { auth } from "../firebase";
 import { config } from "../core/config";
 import { useUserInfo } from "./useUserInfo";
+import { Reservation } from "../types";
 
 export const useReservationsList = (
   company_id?: string,
@@ -9,10 +10,11 @@ export const useReservationsList = (
 ) => {
   const { data: userInfo } = useUserInfo();
   const currentUser = auth.currentUser;
+  const queryClient = useQueryClient();
 
-  return useQuery({
+  return useQuery<Reservation[], Error>({
     queryKey: ["reservations", company_id, branch_id],
-    queryFn: async () => {
+    queryFn: async (): Promise<Reservation[]> => {
       if (!currentUser) return [];
 
       // クエリパラメータの構築
@@ -28,8 +30,7 @@ export const useReservationsList = (
       }
       const today = new Date().toISOString().split("T")[0];
       searchParams.append("target_date", today);
-      searchParams.append("status", "accepted");
-      searchParams.append("status", "calling");
+      searchParams.append("status", "accepted,calling");
       const paramsString = searchParams.toString();
 
       const idToken = await currentUser.getIdToken();
@@ -43,9 +44,23 @@ export const useReservationsList = (
         }
       );
       if (!response.ok) throw new Error("予約一覧の取得に失敗しました");
-      return await response.json();
+      const data = (await response.json()) as Reservation[];
+
+      // 重複を除去
+      const uniqueData: Reservation[] = Array.from(
+        new Map(data.map((item) => [item.id, item])).values()
+      );
+
+      // キャッシュを更新
+      queryClient.setQueryData(
+        ["reservations", company_id, branch_id],
+        uniqueData
+      );
+
+      return uniqueData;
     },
     enabled: !!currentUser && !!userInfo,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 5, // 5分間はデータを新鮮とみなす
+    gcTime: 1000 * 60 * 10, // 10分間キャッシュを保持
   });
 };

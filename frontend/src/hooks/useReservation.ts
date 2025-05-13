@@ -52,6 +52,7 @@ export const useReservation = (branchId: string | null) => {
       }
 
       const data = await response.json();
+      console.log("data1", data);
       setReservation(data);
       setError(null);
     } catch (error: any) {
